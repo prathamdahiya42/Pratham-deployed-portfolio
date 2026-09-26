@@ -1,0 +1,201 @@
+/* ═══════════════════════════════════════════════════════
+   Design Tokens & Custom Properties
+   White + Orange Glassmorphism — generated via ui-ux-pro-max
+   Portfolio Grid / Motion-Driven pattern
+   Glassmorphism style: backdrop-filter blur(16px) saturate(180%)
+   Palette: Burnt Orange #EA580C (4.56:1 WCAG AA on white)
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --bg-primary:       #FAFAFA;
+  --bg-secondary:     #F3F2F0;
+  --bg-card:          rgba(255, 255, 255, 0.55);
+  --accent-primary:   #EA580C;
+  --accent-secondary: #F97316;
+  --accent-glow:      #FB923C;
+  --text-primary:     #1A1A1A;
+  --text-secondary:   #6B6B6B;
+  --text-muted:       #A8A8A8;
+  --border-subtle:    rgba(234, 88, 12, 0.15);
+  --font-display:     'Sora', sans-serif;
+  --font-body:        'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --ease-out-expo:    cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Glassmorphism tokens (from ui-ux-pro-max style spec) */
+  --glass-bg:         rgba(255, 255, 255, 0.55);
+  --glass-blur:       16px;
+  --glass-saturate:   180%;
+  --glass-border:     rgba(255, 255, 255, 0.7);
+  --glass-shadow:     0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Reset & Base
+   ═══════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: auto;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+img { max-width: 100%; display: block; }
+
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Orb Drift Animation
+   ═══════════════════════════════════════════════════════ */
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, -30px) scale(1.05); }
+  66%      { transform: translate(-20px, 20px) scale(0.97); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   Glitch Text Effect
+   ═══════════════════════════════════════════════════════ */
+@keyframes glitch-clip-1 {
+  0%   { clip-path: inset(20% 0 60% 0); transform: translate(-4px, 0); }
+  50%  { clip-path: inset(50% 0 20% 0); transform: translate(4px, 0); }
+  100% { clip-path: inset(20% 0 60% 0); transform: translate(-4px, 0); }
+}
+@keyframes glitch-clip-2 {
+  0%   { clip-path: inset(60% 0 10% 0); transform: translate(4px, 0); }
+  50%  { clip-path: inset(10% 0 70% 0); transform: translate(-4px, 0); }
+  100% { clip-path: inset(60% 0 10% 0); transform: translate(4px, 0); }
+}
+
+.glitch-text {
+  position: relative;
+}
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+.glitch-text:hover::before {
+  opacity: 0.7;
+  color: #FB923C;
+  animation: glitch-clip-1 0.4s steps(2) infinite;
+}
+.glitch-text:hover::after {
+  opacity: 0.7;
+  color: #EA580C;
+  animation: glitch-clip-2 0.4s steps(2) infinite;
+  animation-delay: 0.05s;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Custom Cursor (Desktop Only)
+   ═══════════════════════════════════════════════════════ */
+@media (hover: hover) and (pointer: fine) {
+  * { cursor: none !important; }
+}
+
+.cursor-hover {
+  width: 64px !important;
+  height: 64px !important;
+  border-color: rgba(234, 88, 12, 0.9) !important;
+  margin-left: -12px;
+  margin-top: -12px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   Hero Inner — responsive flex
+   ═══════════════════════════════════════════════════════ */
+.hero-inner {
+  flex-direction: row;
+}
+@media (max-width: 900px) {
+  .hero-inner {
+    flex-direction: column-reverse !important;
+    text-align: center;
+    align-items: center !important;
+  }
+  .hero-inner .hero-ctas {
+    justify-content: center;
+  }
+  .hero-inner p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-toggle { display: flex !important; }
+  .nav-links {
+    position: fixed !important;
+    top: 0 !important; right: 0 !important;
+    width: min(300px, 80vw) !important;
+    height: 100vh !important;
+    background: rgba(250, 250, 250, 0.97) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 2.5rem !important;
+    transform: translateX(100%) !important;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    border-left: 1px solid rgba(234, 88, 12, 0.2) !important;
+    padding: 0 !important;
+  }
+  .nav-links.open {
+    transform: translateX(0) !important;
+  }
+  .nav-links a { font-size: 1.1rem !important; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .projects-grid { grid-template-columns: 1fr !important; }
+  .video-thumbs-grid { grid-template-columns: 1fr !important; }
+  .hero-ctas {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .hero-ctas a { width: 100%; max-width: 260px; }
+  .yt-callout {
+    flex-direction: column !important;
+    text-align: center !important;
+    padding: 1.5rem !important;
+  }
+  .contact-links { gap: 1.5rem !important; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   Reduced Motion
+   ═══════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

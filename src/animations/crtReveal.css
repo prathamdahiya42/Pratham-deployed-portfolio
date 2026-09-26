@@ -1,0 +1,89 @@
+/* ═══════════════════════════════════════════════════════
+   CRT Card — Structural & Hover Styles
+   (Reveal animation removed — rubber membrane handles that now)
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Card base — ALWAYS VISIBLE ── */
+.crt-card {
+  opacity: 1;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* ── RGB Glitch pseudo-elements (kept for possible future use) ── */
+.crt-card::before,
+.crt-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+  transition: none;
+}
+
+.crt-card::before {
+  background: rgba(255, 0, 60, 0.25);
+  mix-blend-mode: screen;
+}
+
+.crt-card::after {
+  background: rgba(0, 100, 255, 0.25);
+  mix-blend-mode: screen;
+}
+
+/* ── Hover CRT scanline texture overlay ── */
+.crt-hover-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.03) 0px,
+    rgba(0, 0, 0, 0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* ── Hover glow ── */
+.crt-card {
+  transition: box-shadow 0.3s ease;
+}
+.crt-card:hover {
+  box-shadow: 0 0 20px rgba(234, 88, 12, 0.12),
+              0 8px 32px rgba(0, 0, 0, 0.08),
+              inset 0 0 12px rgba(234, 88, 12, 0.04);
+}
+.crt-card:hover .crt-hover-overlay {
+  opacity: 1;
+  transition-duration: 0.2s;
+}
+
+/* ── Card content — ALWAYS VISIBLE ── */
+.crt-card-content {
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Reduced Motion
+   ═══════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .crt-card {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .crt-card::before,
+  .crt-card::after {
+    display: none !important;
+  }
+  .crt-card-content {
+    opacity: 1 !important;
+  }
+}
