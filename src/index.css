@@ -199,3 +199,117 @@ img { max-width: 100%; display: block; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   Non-Hero Scoped Themes (Dim vs Daylight)
+   Only applies to sections inside .non-hero-container (below hero).
+   The Hero section is 100% frozen and untouched.
+   ═══════════════════════════════════════════════════════ */
+.non-hero-container {
+  position: relative;
+  isolation: isolate;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* "Dim" Mode: Pure OLED Black base (#000000), crisp white/silver text, vibrant amber highlights */
+.non-hero-container.theme-dim {
+  --bg-primary: transparent;
+  --bg-secondary: rgba(255, 255, 255, 0.02);
+  --bg-card: rgba(16, 16, 16, 0.82);
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
+  --accent-primary: #FF6B00;
+  --accent-secondary: #FFA048;
+  --accent-glow: rgba(255, 107, 0, 0.4);
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --glass-bg: rgba(16, 16, 16, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.85);
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
+/* "Daylight" Mode: Pure crisp white base, deep onyx text, refined burnt-orange highlights */
+.non-hero-container.theme-daylight {
+  --bg-primary: transparent;
+  --bg-secondary: #F8F9FA;
+  --bg-card: rgba(255, 255, 255, 0.90);
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --accent-primary: #EA580C;
+  --accent-secondary: #C2410C;
+  --accent-glow: rgba(234, 88, 12, 0.25);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.90);
+  --glass-border: rgba(0, 0, 0, 0.10);
+  --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  background-color: #FFFFFF;
+  color: #0F172A;
+}
+
+/* Glass cards and containers in Dim mode */
+.non-hero-container.theme-dim .crt-card-content,
+.non-hero-container.theme-dim .yt-callout,
+.non-hero-container.theme-dim .tilt-card,
+.non-hero-container.theme-dim [style*="background: rgba(255, 255, 255"],
+.non-hero-container.theme-dim [style*="background: rgba(255,255,255"],
+.non-hero-container.theme-dim [style*="background:rgba(255, 255, 255"],
+.non-hero-container.theme-dim [style*="background:rgba(255,255,255"] {
+  background: rgba(16, 16, 16, 0.82) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Video placeholder in Dim mode */
+.non-hero-container.theme-dim [role="img"][aria-label="Video thumbnail placeholder"] {
+  background: rgba(22, 22, 22, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #A1A1AA !important;
+}
+
+/* Subtle text contrast enhancement for reading over ASCII tiles */
+.non-hero-container.theme-dim section p,
+.non-hero-container.theme-dim section h2,
+.non-hero-container.theme-dim section h3 {
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+}
+
+.non-hero-container.theme-daylight section p,
+.non-hero-container.theme-daylight section h2,
+.non-hero-container.theme-daylight section h3 {
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* ══════════════════════════════════════════════════
+   AI Agent Terminal Animations & Dim Mode Rules
+   ══════════════════════════════════════════════════ */
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.non-hero-container.theme-dim .agent-chat-terminal {
+  background: rgba(12, 12, 14, 0.88) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85) !important;
+}
+
+.non-hero-container.theme-dim .agent-chat-terminal input {
+  background: rgba(22, 22, 26, 0.9) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.non-hero-container.theme-dim .agent-chat-terminal button[type="button"] {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+

@@ -526,9 +526,8 @@ function setupMembrane(card) {
 
 export function initRubberTear() {
   try {
-    const cards = document.querySelectorAll('.projects-grid .crt-card');
+    const cards = document.querySelectorAll('.projects-grid .crt-card:not(.pixel-card)');
     if (!cards.length) {
-      console.warn('[RubberTear] No project cards found. Exiting safely.');
       return;
     }
 

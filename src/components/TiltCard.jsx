@@ -32,11 +32,12 @@ export default function TiltCard({ children, className = '' }) {
         position: 'relative',
         overflow: 'hidden',
         borderRadius: '16px',
-        background: 'rgba(255, 255, 255, 0.55)',
+        background: 'var(--bg-card, rgba(255, 255, 255, 0.55))',
         backdropFilter: 'blur(16px) saturate(180%)',
         WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.7)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+        border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.7))',
+        boxShadow: 'var(--glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.08))',
+        color: 'var(--text-primary)',
       }}
       className={className}
     >
@@ -45,7 +46,7 @@ export default function TiltCard({ children, className = '' }) {
         aria-hidden="true"
         style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: `radial-gradient(circle 200px at ${glowPos.x}% ${glowPos.y}%, rgba(234,88,12,0.12), transparent 70%)`,
+          background: `radial-gradient(circle 200px at ${glowPos.x}% ${glowPos.y}%, var(--accent-glow, rgba(234,88,12,0.12)), transparent 70%)`,
           transition: 'background 0.1s',
         }}
       />

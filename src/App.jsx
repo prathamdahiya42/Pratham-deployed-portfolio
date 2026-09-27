@@ -1,15 +1,24 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import Lenis from '@studio-freight/lenis';
 import CustomCursor from './components/CustomCursor';
 import ScrollReveal from './components/ScrollReveal';
 import TiltCard from './components/TiltCard';
 import SectionDivider from './components/SectionDivider';
 import StarField from './components/StarField';
-import DualImageReveal from './components/DualImageReveal';
+import GlassReveal from './components/GlassReveal';
+import AsciiTiles from './components/AsciiTiles';
+import TechText from './components/TechText';
+import SplitFlapText from './components/SplitFlapText';
+import DecryptedText from './components/DecryptedText';
+import BlurText from './components/BlurText';
+import AgentChat from './components/AgentChat';
+import PixelCard from './components/PixelCard';
 import './animations/crtReveal.css';
 import { initRubberTear } from './animations/rubberTear';
 import './animations/rubberTear.css';
+
+const ProjectLanyardModal = lazy(() => import('./components/ProjectLanyardModal'));
 
 /* ═══════════════════════════════════════════════════════
    Lenis Smooth Scroll Hook
@@ -59,7 +68,7 @@ function StatCounter({ target, suffix = '' }) {
           requestAnimationFrame(update);
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.2 }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -80,12 +89,13 @@ function SkillBadge({ name, icon }) {
         display: 'inline-flex', alignItems: 'center', gap: 8,
         padding: '8px 16px',
         borderRadius: 8,
-        background: 'rgba(234,88,12,0.07)',
-        border: '1px solid rgba(234,88,12,0.2)',
-        color: '#1A1A1A',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-subtle)',
+        color: 'var(--text-primary)',
         fontSize: '0.875rem',
         fontWeight: 500,
         cursor: 'default',
+        transition: 'background 0.3s ease, border-color 0.3s ease, color 0.3s ease',
       }}
     >
       {icon && <span style={{ fontSize: '1.1rem' }}>{icon}</span>}
@@ -97,38 +107,183 @@ function SkillBadge({ name, icon }) {
 /* ═══════════════════════════════════════════════════════
    Data
    ═══════════════════════════════════════════════════════ */
+const projectCategories = ['All', 'Client Work', 'Hackathons', 'Personal Builds', 'For Fun'];
+
 const projects = [
-  { id: 1, name: 'JEE Focus Complication', badge: 'Live', desc: 'A watchOS complication focused on productivity and deep focus — shipped live to users.', tags: 'Platform: watchOS / Apple Watch', link: '#', linkText: 'View Project →', external: false },
-  { id: 2, name: 'Professional Athlete Portfolio', badge: 'GitHub', desc: "A cinematic, scroll-animated personal portfolio built with Vite, GSAP, Lenis, and Three.js — the site you're on right now.", tags: 'Tech: Vite, JavaScript, GSAP, Three.js, Lenis', link: 'https://github.com/prathamdahiya42/Professional-athlete-portfolio', linkText: 'View on GitHub →', external: true },
-  { id: 3, name: 'Prep Nexus', badge: 'GitHub', desc: 'An EdTech platform designed to help competitive exam aspirants organize their preparation with smart tools and resources.', tags: 'Tech: Full-Stack Web', link: 'https://github.com/prathamdahiya42/Prep-Nexus', linkText: 'View on GitHub →', external: true },
-  { id: 4, name: 'Puzzle Hunt', badge: 'GitHub', desc: 'An interactive puzzle hunt game — solving challenges through code and creative problem-solving.', tags: 'Tech: JavaScript, Web', link: 'https://github.com/prathamdahiya42/Puzzle-hand', linkText: 'View on GitHub →', external: true },
-  { id: 5, name: 'Web Tacker', badge: 'GitHub', desc: 'A web-based hacking simulation / educational tool exploring cybersecurity concepts interactively.', tags: 'Tech: JavaScript, Web', link: 'https://github.com/prathamdahiya42', linkText: 'View on GitHub →', external: true },
-  { id: 6, name: 'Mini Browser Game', badge: 'GitHub', desc: 'A small, fun browser-based game built as a creative coding exercise — fully playable in the browser.', tags: 'Tech: JavaScript, HTML Canvas', link: 'https://github.com/prathamdahiya42/simple-game', linkText: 'View on GitHub →', external: true },
-  { id: 7, name: 'This Portfolio', badge: 'Live', desc: "The very site you're browsing — cinematic scroll animations, Three.js particles, GSAP timelines, and zero frameworks beyond Vite.", tags: 'Tech: Vite, GSAP, Three.js, Lenis, Vanilla JS', link: 'https://github.com/prathamdahiya42', linkText: 'View on GitHub →', external: true },
+  /* ── CLIENT WORK ── */
+  {
+    id: 1,
+    category: 'Client Work',
+    name: "Pravin Dahiya's Portfolio",
+    tagline: 'Single-page portfolio and coaching hub for a PE teacher & yoga instructor.',
+    desc: 'A single-page portfolio engineered for client Pravin Kumar Dahiya (PE teacher and yoga instructor in Satna, MP). Features sticky navigation, an interactive experience timeline, skills matrix, blog, and smooth Intersection Observer scroll reveals. Integrated with Decap CMS so the client can publish blog posts and updates without touching code.',
+    tech: ['HTML', 'CSS', 'Vanilla JS', 'Decap CMS', 'Intersection Observer'],
+    liveUrl: null,
+    repoUrl: 'https://github.com/prathamdahiya42/Pravin-dahiya-s-portfolio',
+  },
+  {
+    id: 2,
+    category: 'Client Work',
+    name: 'The Skyline Travels World',
+    tagline: 'High-converting tour booking platform for a pan-India travel agency.',
+    desc: 'A commercial travel booking site built for a Bhopal-based pan-India agency. Features prominent hero Book Now and Call Now CTAs paired with a dedicated Quick Tour Enquiry form. Includes an MP-focused travel gallery and a direct WhatsApp-integrated enquiry workflow to maximize lead conversions.',
+    tech: ['React', 'Vite', 'Tailwind CSS', 'WhatsApp Integration'],
+    liveUrl: null,
+    repoUrl: 'https://github.com/prathamdahiya42/The-Skyline-Travels-World',
+  },
+  {
+    id: 3,
+    category: 'Client Work',
+    name: 'Crafted by Habiba',
+    tagline: 'Serverless e-commerce storefront for handcrafted gifts and custom bracelets.',
+    desc: 'An e-commerce website designed for an Instagram handmade accessories brand ("Customized with Love"). Architected without a traditional backend using Decap CMS for product catalogs, customer reviews, and store settings, deployed on Netlify with secure Netlify Identity and Git Gateway auth on /admin.',
+    tech: ['React', 'Vite', 'Tailwind v4', 'Motion', 'React Router v7', 'Decap CMS', 'Netlify'],
+    liveUrl: null,
+    repoUrl: 'https://github.com/prathamdahiya42/Commercial-Business-site',
+  },
+  {
+    id: 4,
+    category: 'Client Work',
+    name: 'MP Rank Finder (MPDET Webapp)',
+    tagline: 'Instant DTE merit rank lookup tool for Madhya Pradesh engineering aspirants.',
+    desc: 'A rapid-lookup utility engineered for MP engineering admissions, letting students check their official DTE merit-list rank immediately on release day. Eliminates the bottleneck of crashing official portals with instantaneous client-side querying and responsive feedback. Shipped same-day to serve hundreds of students under peak admissions traffic.',
+    tech: ['React', 'Vite', 'Tailwind CSS', 'Vercel'],
+    liveUrl: 'https://mpdet-webapp.vercel.app',
+    repoUrl: 'https://github.com/prathamdahiya42/MPDET-Webapp',
+  },
+
+  /* ── HACKATHONS & COMPETITIONS ── */
+  {
+    id: 5,
+    category: 'Hackathons',
+    name: 'CivicLens — Imprenditore 5.0',
+    tagline: 'Multimodal AI urban issue reporting system with geofenced proof-of-fix.',
+    desc: 'Built for Problem Statement PS-05 at E-Cell RGPV (Bhopal) to modernize municipal issue reporting. Citizens snap and submit photo reports, which Gemini 2.5 Flash multimodally categorizes, scores for urgency (0–100), tags visually, and automatically redacts faces and license plates. Field officers resolve reports with strict ≤50m geofenced proof-of-fix verification, supported by a deterministic mock-AI offline fallback.',
+    tech: ['TypeScript', 'Gemini 2.5 Flash', 'Multimodal AI', 'Geofencing', 'Privacy Blurring'],
+    liveUrl: null,
+    repoUrl: 'https://github.com/prathamdahiya42/Civiclens-prototype',
+  },
+  {
+    id: 6,
+    category: 'Hackathons',
+    name: 'MediKiosk — Smart India Hackathon',
+    tagline: 'AYUSH clinical intake kiosk with Ashtavidha/Dashavidha diagnostic banks.',
+    desc: 'An AI-augmented healthcare triage kiosk engineered for Smart India Hackathon (SIH26047) across Patient, Doctor, and Admin portals. Features an Ashtavidha and Dashavidha Pariksha clinical question bank, an interactive Prakriti constitution quiz, and specialized symptom modules. Synthesizes clinical data into structured LLM summaries for doctors, complete with a deterministic offline fallback.',
+    tech: ['TypeScript', 'React', 'LLMs', 'Healthcare AI', 'Vercel'],
+    liveUrl: 'https://medikoisk.vercel.app',
+    repoUrl: 'https://github.com/prathamdahiya42/medikoisk',
+  },
+  {
+    id: 7,
+    category: 'Hackathons',
+    name: 'SIH Collab',
+    tagline: 'Real-time hackathon war room featuring an autonomous AI 7th team member.',
+    desc: 'A collaborative command center built for Smart India Hackathon squads of 6–9 members. Integrates an autonomous AI copilot that attends sessions and generates on-demand syntheses of team discussions, decisions, and action items. Built with Next.js 14.2 App Router, Supabase Realtime/RLS, embedded Jitsi video rooms, and client-side AES-256-GCM encryption for BYOK Groq, Gemini, and OpenRouter API keys.',
+    tech: ['Next.js 14.2', 'TypeScript', 'Supabase Realtime', 'Jitsi', 'AES-256-GCM', 'Groq', 'Gemini'],
+    liveUrl: null,
+    repoUrl: 'https://github.com/prathamdahiya42/sih-team-workspace',
+  },
+
+  /* ── PERSONAL BUILDS ── */
   {
     id: 8,
-    name: 'MPDET WebApp',
-    badge: 'Live',
-    desc: 'A modern full-stack web application built for real-world deployment — clean UI, fast performance, and scalable architecture. Edit this description to reflect your project specifics.',
-    tags: 'Tech: React, Vite, Full-Stack Web',
-    links: [
-      { href: 'https://mpdet-webapp.vercel.app/', text: 'Live Demo →', label: 'Live demo of MPDET WebApp' },
-      { href: 'https://github.com/prathamdahiya42/MPDET-Webapp', text: 'Source Code →', label: 'View MPDET WebApp source code on GitHub' },
+    category: 'Personal Builds',
+    name: 'EEE Pulse (UIT Batch App)',
+    tagline: 'Multi-branch academic portal, timetable viewer, and attendance tracker.',
+    desc: 'A comprehensive batch portal engineered for UIT RGPV students to manage academic schedules and daily campus workflow. Provides branch-specific PDF timetables, granular subject-level attendance calculations, and designated class-captain administrative powers. Delivers real-time branch and campus-wide bulletin feeds, peer chat rooms, and a searchable shared notes repository.',
+    tech: ['TypeScript', 'React', 'Supabase', 'Tailwind CSS'],
+    liveUrl: null,
+    repoUrl: 'https://github.com/prathamdahiya42/EEE-Batch',
+  },
+  {
+    id: 9,
+    category: 'Personal Builds',
+    name: 'Idroid',
+    tagline: 'Offline-first, voice-activated personal AI assistant and alarm manager.',
+    desc: 'A personal AI life-assistant web application featuring hands-free voice-triggered activation ("Hey Idroid"), customizable per-alarm ringtones, and contact-priority settings. Designed with an offline-first local-storage architecture, ensuring all core productivity reminders and alarms remain fully functional without internet access.',
+    tech: ['TypeScript', 'Web Speech API', 'Audio API', 'LocalStorage', 'Vercel'],
+    liveUrl: 'https://teamidroidprototype.vercel.app',
+    repoUrl: 'https://github.com/prathamdahiya42/Team-Idroid-Prototype',
+  },
+  {
+    id: 10,
+    category: 'Personal Builds',
+    name: 'Chess Game Analyzer',
+    tagline: 'Free client-side chess analysis engine using Stockfish WASM and chess.js.',
+    desc: 'A high-performance chess analysis web application built to offer deep game analysis without recurring platform subscriptions. Combines Stockfish compiled to WebAssembly with chess.js for instant client-side calculation and an in-house eval-delta move classification engine that flags inaccuracies and blunders. Features an interactive board interface with planned hand-drawn SVG chess pieces.',
+    tech: ['React', 'TypeScript', 'Vite', 'Stockfish WASM', 'chess.js'],
+    liveUrl: null,
+    repoUrl: 'https://github.com/prathamdahiya42/Chess-game-analyzer',
+  },
+
+  /* ── FOR FUN ── */
+  {
+    id: 11,
+    category: 'For Fun',
+    name: 'Suryavanshi Bird',
+    tagline: '928-line handcrafted HTML5 Canvas arcade engine in modular vanilla JS.',
+    desc: 'A polished Flappy Bird recreation driven by a ~928-line custom game engine written in modular ES JavaScript with zero external game dependencies. Features custom collision detection, sprite physics, glassmorphic UI overlays, and 60fps Canvas rendering. Fully open-sourced as a deeply documented deep dive into pure vanilla JavaScript game mechanics.',
+    tech: ['Vanilla JS', 'HTML5 Canvas', 'ES Modules', 'CSS Glassmorphism'],
+    liveUrl: null,
+    repoUrl: 'https://github.com/prathamdahiya42/Simple-game',
+  },
+];
+
+const skillCategories = [
+  {
+    category: 'Frontend',
+    skills: [
+      'React',
+      'Next.js 14 (App Router)',
+      'Vite',
+      'TypeScript',
+      'JavaScript',
+      'Tailwind CSS v4',
+      'Framer Motion (Motion)',
+      'React Router v7',
+    ],
+  },
+  {
+    category: 'Backend / Data',
+    skills: [
+      'Supabase (Postgres, Row-Level Security, Realtime)',
+      'AES-256-GCM (BYOK key encryption)',
+    ],
+  },
+  {
+    category: 'CMS / Deploy',
+    skills: [
+      'Decap CMS (git-based headless CMS)',
+      'Netlify Identity + Git Gateway',
+      'Vercel',
+      'Netlify',
+    ],
+  },
+  {
+    category: 'AI / APIs',
+    skills: [
+      'Gemini API (incl. Gemini 2.5 Flash multimodal)',
+      'Groq',
+      'OpenRouter',
+    ],
+  },
+  {
+    category: 'Other',
+    skills: [
+      'Stockfish WASM',
+      'chess.js',
+      'Jitsi (embedded video)',
+      'HTML5 Canvas + ES Modules',
     ],
   },
 ];
 
-const skills = [
-  'Python', 'JavaScript / TypeScript', 'React', 'Claude API & LLM Integration',
-  'Prompt Engineering', 'Full-Stack Development', 'After Effects', 'CapCut',
-  'Claude & Claude Code', 'Gemini & Google AI', 'Base44 / Emergent / Antigravity',
-  'ChatGPT & Perplexity', 'ElevenLabs', 'Video Editing & Content Production',
-];
-
 const navLinks = [
   { href: '#about', label: 'About' },
+  { href: '#skills', label: 'Skills' },
   { href: '#projects', label: 'Projects' },
   { href: '#content', label: 'Content' },
+  { href: '#ask-agent', label: 'Ask AI' },
   { href: '#contact', label: 'Contact' },
 ];
 
@@ -141,12 +296,28 @@ export default function App() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const [navOpen, setNavOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedLanyardProject, setSelectedLanyardProject] = useState(null);
+  const [themeMode, setThemeMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('portfolio_non_hero_theme') || 'Dim';
+    }
+    return 'Dim';
+  });
 
-  /* Rubber membrane tear reveal — additive overlay on project cards */
   useEffect(() => {
-    const id = setTimeout(() => initRubberTear(), 150);
-    return () => clearTimeout(id);
-  }, []);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('portfolio_non_hero_theme', themeMode);
+    }
+  }, [themeMode]);
+
+  /* Rubber membrane tear reveal — additive overlay on project cards for non-All tabs */
+  useEffect(() => {
+    if (selectedCategory !== 'All') {
+      const id = setTimeout(() => initRubberTear(), 150);
+      return () => clearTimeout(id);
+    }
+  }, [selectedCategory]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -200,47 +371,95 @@ export default function App() {
             Pratham Dahiya
           </a>
 
-          {/* Mobile toggle */}
-          <button
-            className="nav-toggle"
-            onClick={() => setNavOpen(!navOpen)}
-            style={{ display: 'none', flexDirection: 'column', gap: 5, background: 'none', border: 'none', cursor: 'pointer', padding: 4, zIndex: 1001 }}
-            aria-label="Toggle navigation menu"
-            aria-expanded={navOpen}
-          >
-            <span style={{ display: 'block', width: 22, height: 2, background: 'var(--text-primary)', borderRadius: 2, transition: 'all 0.3s', transform: navOpen ? 'translateY(7px) rotate(45deg)' : 'none' }} />
-            <span style={{ display: 'block', width: 22, height: 2, background: 'var(--text-primary)', borderRadius: 2, transition: 'all 0.3s', opacity: navOpen ? 0 : 1 }} />
-            <span style={{ display: 'block', width: 22, height: 2, background: 'var(--text-primary)', borderRadius: 2, transition: 'all 0.3s', transform: navOpen ? 'translateY(-7px) rotate(-45deg)' : 'none' }} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            {/* Mobile toggle */}
+            <button
+              className="nav-toggle"
+              onClick={() => setNavOpen(!navOpen)}
+              style={{ display: 'none', flexDirection: 'column', gap: 5, background: 'none', border: 'none', cursor: 'pointer', padding: 4, zIndex: 1001 }}
+              aria-label="Toggle navigation menu"
+              aria-expanded={navOpen}
+            >
+              <span style={{ display: 'block', width: 22, height: 2, background: 'var(--text-primary)', borderRadius: 2, transition: 'all 0.3s', transform: navOpen ? 'translateY(7px) rotate(45deg)' : 'none' }} />
+              <span style={{ display: 'block', width: 22, height: 2, background: 'var(--text-primary)', borderRadius: 2, transition: 'all 0.3s', opacity: navOpen ? 0 : 1 }} />
+              <span style={{ display: 'block', width: 22, height: 2, background: 'var(--text-primary)', borderRadius: 2, transition: 'all 0.3s', transform: navOpen ? 'translateY(-7px) rotate(-45deg)' : 'none' }} />
+            </button>
 
-          <ul className={`nav-links${navOpen ? ' open' : ''}`} style={{ display: 'flex', gap: '2rem', listStyle: 'none' }} role="list">
-            {navLinks.map((link) => (
-              <li key={link.href} style={{ position: 'relative' }}>
-                <a
-                  href={link.href}
-                  onClick={() => setNavOpen(false)}
-                  style={{
-                    fontSize: '0.85rem', fontWeight: 400,
-                    color: activeSection === link.href ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    transition: 'color 0.3s ease',
-                  }}
-                >
-                  {link.label}
-                </a>
-                {activeSection === link.href && (
-                  <motion.span
-                    layoutId="nav-underline"
+            <ul className={`nav-links${navOpen ? ' open' : ''}`} style={{ display: 'flex', gap: '2rem', listStyle: 'none' }} role="list">
+              {navLinks.map((link) => (
+                <li key={link.href} style={{ position: 'relative' }}>
+                  <a
+                    href={link.href}
+                    onClick={() => setNavOpen(false)}
                     style={{
-                      position: 'absolute', bottom: -4, left: 0, right: 0,
-                      height: 2,
-                      background: 'linear-gradient(90deg, #EA580C, #FB923C)',
-                      borderRadius: 1,
+                      fontSize: '0.85rem', fontWeight: 400,
+                      color: activeSection === link.href ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      transition: 'color 0.3s ease',
                     }}
-                  />
-                )}
-              </li>
-            ))}
-          </ul>
+                  >
+                    {link.label}
+                  </a>
+                  {activeSection === link.href && (
+                    <motion.span
+                      layoutId="nav-underline"
+                      style={{
+                        position: 'absolute', bottom: -4, left: 0, right: 0,
+                        height: 2,
+                        background: 'linear-gradient(90deg, #EA580C, #FB923C)',
+                        borderRadius: 1,
+                      }}
+                    />
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            {/* Non-Hero Theme Toggle: "Dim" vs "Daylight" */}
+            <button
+              type="button"
+              onClick={() => setThemeMode((prev) => (prev === 'Dim' ? 'Daylight' : 'Dim'))}
+              aria-label={`Current non-hero theme is ${themeMode}. Click to switch to ${themeMode === 'Dim' ? 'Daylight' : 'Dim'}`}
+              title={`Switch non-hero theme to ${themeMode === 'Dim' ? 'Daylight' : 'Dim'}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 14px',
+                borderRadius: 100,
+                border: themeMode === 'Dim'
+                  ? '1px solid rgba(255, 255, 255, 0.18)'
+                  : '1px solid rgba(0, 0, 0, 0.12)',
+                background: themeMode === 'Dim'
+                  ? 'rgba(10, 10, 10, 0.88)'
+                  : 'rgba(255, 255, 255, 0.92)',
+                color: themeMode === 'Dim' ? '#FFFFFF' : '#0F172A',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+                cursor: 'pointer',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: themeMode === 'Dim'
+                  ? '0 0 16px rgba(255, 107, 0, 0.22)'
+                  : '0 2px 10px rgba(0, 0, 0, 0.06)',
+                zIndex: 1002,
+              }}
+            >
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  background: themeMode === 'Dim' ? '#FF6B00' : '#F59E0B',
+                  boxShadow: themeMode === 'Dim' ? '0 0 8px #FF6B00' : '0 0 6px #FBBF24',
+                  display: 'inline-block',
+                }}
+              />
+              <span>{themeMode}</span>
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -250,47 +469,107 @@ export default function App() {
             ══════════════════════════════════════════════════ */}
         <section id="hero" aria-label="Introduction" style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
 
-          {/* Layer 1 — Warm white gradient background */}
-          <div style={{ background: 'linear-gradient(160deg, #FFF8F4 0%, #FDF4EE 40%, #FFF9F5 100%)', position: 'absolute', inset: 0 }} />
+          {/* Interactive Background — Glass Reveal (Pristine color inside circle, Blurry B&W Sketch & Glitch outside) */}
+          <GlassReveal
+            image="/images/hero/FRONT01.webp"
+            backgroundImage="/images/hero/FRONT02.webp"
+            shape="circle"
+            size={0.42}
+            blurStrength={3.5}
+            glitchStrength={0.025}
+            glitchSpeed={4.0}
+            sketchStrength={1.0}
+            distortion={0.06}
+            softness={0.006}
+            glowColor={[0.85, 0.86, 0.90]}
+          />
 
-          {/* Layer 2 — Animated gradient orbs (CSS only) */}
-          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-            <div style={{ position: 'absolute', top: '10%', left: '5%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(234,88,12,0.12) 0%, transparent 70%)', filter: 'blur(60px)', animation: 'orb-drift 12s ease-in-out infinite' }} />
-            <div style={{ position: 'absolute', top: '30%', right: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(251,146,60,0.10) 0%, transparent 70%)', filter: 'blur(80px)', animation: 'orb-drift 16s ease-in-out infinite reverse' }} />
-            <div style={{ position: 'absolute', bottom: '5%', left: '40%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)', filter: 'blur(70px)', animation: 'orb-drift 20s ease-in-out infinite', animationDelay: '-5s' }} />
-          </div>
-
-          {/* Layer 3 — WebGL StarField (200 twinkling points) */}
+          {/* WebGL StarField (200 twinkling points) */}
           <StarField />
 
-          {/* Overlay vignette */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'radial-gradient(ellipse at center, transparent 0%, rgba(255,245,235,0.6) 80%)', pointerEvents: 'none' }} />
+          {/* Subtle contrast vignette overlay */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 2,
+              background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.05) 0%, rgba(245, 245, 245, 0.38) 85%)',
+              pointerEvents: 'none',
+            }}
+          />
 
-          {/* Layer 4 — Hero content: text (left) + dual-image reveal (right) */}
+          {/* Layer 4 — Hero content: text */}
           <div
             className="hero-inner"
             style={{
               position: 'relative', zIndex: 3,
-              width: '100%', maxWidth: 1100,
+              width: '100%', maxWidth: 1200,
               padding: '2rem clamp(1.25rem, 4vw, 3rem)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'clamp(2.5rem, 5vw, 5rem)',
             }}
           >
             {/* ── Text column ── */}
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ flex: 1, minWidth: 0, maxWidth: 780 }}>
 
-              {/* Layer 5 — Glitch name effect */}
-              <motion.h1
-                className="glitch-text" data-text="Pratham Dahiya"
+              {/* Brand Pill */}
+              <motion.div
+                {...(reduced ? {} : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } })}
+                transition={{ duration: 0.6 }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '6px 14px',
+                  borderRadius: 100,
+                  background: 'rgba(234, 88, 12, 0.08)',
+                  border: '1px solid rgba(234, 88, 12, 0.25)',
+                  color: 'var(--accent-primary)',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  marginBottom: '1rem',
+                }}
+              >
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-primary)', display: 'inline-block' }} />
+                House VibeCoders
+              </motion.div>
+
+              {/* Layer 5 — TechText interactive name display */}
+              <motion.div
                 {...(reduced ? {} : { initial: { opacity: 0, y: 60 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-                style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(2.8rem, 6vw, 6rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', marginBottom: '0.5rem', lineHeight: 1.1 }}
+                style={{
+                  width: '100%',
+                  maxWidth: 820,
+                  height: 'clamp(88px, 12vw, 136px)',
+                  marginBottom: '0.65rem',
+                }}
               >
-                Pratham Dahiya
-              </motion.h1>
+                <h1 style={{ margin: 0, padding: 0, height: '100%' }}>
+                  <span className="sr-only" style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>
+                    Pratham Dahiya
+                  </span>
+                  {reduced ? (
+                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(3.2rem, 7vw, 6.4rem)', fontWeight: 800, letterSpacing: '-0.03em', color: '#EA580C', lineHeight: 1.1, display: 'block' }}>
+                      Pratham Dahiya
+                    </span>
+                  ) : (
+                    <TechText
+                      text="Pratham Dahiya"
+                      fontFamily="'Sora', sans-serif"
+                      reveal="letter"
+                      color="#EA580C"
+                      accentColor="#F97316"
+                      fontSize={110}
+                      fontWeight={700}
+                      specks={12}
+                      sweep
+                    />
+                  )}
+                </h1>
+              </motion.div>
 
               <motion.h2
                 {...(reduced ? {} : { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 } })}
@@ -303,9 +582,9 @@ export default function App() {
               <motion.p
                 {...(reduced ? {} : { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-                style={{ fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)', color: 'var(--text-secondary)', maxWidth: 480, marginBottom: '2.5rem', lineHeight: 1.65 }}
+                style={{ fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)', color: 'var(--text-secondary)', maxWidth: 500, marginBottom: '2rem', lineHeight: 1.65 }}
               >
-                Self-taught full-stack developer turning AI experiments into working applications.
+                Self-taught developer building under the brand <strong>House VibeCoders</strong>. First-year EEE student at UIT RGPV, Bhopal with a JEE dropper background — shipping production web apps and multimodal AI products for real clients, not just tutorials.
               </motion.p>
 
               <motion.div
@@ -318,19 +597,114 @@ export default function App() {
                 <a href="#content" id="cta-showreel" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.8rem 1.8rem', fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', fontWeight: 500, letterSpacing: '0.02em', borderRadius: 6, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)', color: 'var(--text-primary)', border: '1px solid rgba(234,88,12,0.25)', transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}>Watch Showreel</a>
                 <a href="#contact" id="cta-contact" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.8rem 1.8rem', fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', fontWeight: 500, letterSpacing: '0.02em', borderRadius: 6, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)', color: 'var(--text-primary)', border: '1px solid rgba(234,88,12,0.25)', transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}>Contact Me</a>
               </motion.div>
-            </div>
 
-            {/* ── Image column ── */}
-            <motion.div
-              {...(reduced ? {} : { initial: { opacity: 0, x: 60, scale: 0.95 }, animate: { opacity: 1, x: 0, scale: 1 } })}
-              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
-              style={{ flexShrink: 0 }}
-            >
-              <DualImageReveal />
-            </motion.div>
+              {/* Layer 5.5 — Credibility stat strip near Hero with SplitFlap departure-board ticker */}
+              <motion.div
+                {...(reduced ? {} : { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 } })}
+                transition={{ duration: 0.8, delay: 0.35 }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.85rem',
+                  marginTop: '2rem',
+                  padding: '1rem 1.4rem',
+                  borderRadius: 14,
+                  background: 'rgba(255, 255, 255, 0.65)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(234, 88, 12, 0.18)',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
+                  maxWidth: '100%',
+                  width: 'fit-content',
+                }}
+              >
+                {/* Departure Board Flip Ticker */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', paddingBottom: 2 }}>
+                  <span style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: 'var(--accent-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    flexShrink: 0,
+                  }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e', display: 'inline-block' }} />
+                    Live Terminal:
+                  </span>
+                  <SplitFlapText
+                    words={['17 REPOSITORIES', '20+ GITHUB STARS', '4 CLIENT BUILDS', 'PROD VERIFIED']}
+                    fontSize={14}
+                    tileRadius={4}
+                    gap={3}
+                    padTo={16}
+                    cycleDelay={2800}
+                    flipDuration={0.09}
+                    tileColor="#121216"
+                    textColor="#FFA048"
+                  />
+                </div>
+
+                <div style={{ width: '100%', height: 1, background: 'rgba(234, 88, 12, 0.14)' }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0.75rem, 2vw, 1.6rem)', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
+                      <StatCounter target={17} />
+                    </span>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Repositories
+                    </span>
+                  </div>
+
+                  <div style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
+
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
+                      <StatCounter target={20} suffix="+" />
+                    </span>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Stars
+                    </span>
+                  </div>
+
+                  <div style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
+
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
+                      <StatCounter target={4} />
+                    </span>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Client Projects Shipped
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
           </div>
 
-          {/* Layer 6 — Bouncing scroll indicator */}
+          {/* Layer 6 — Atmospheric Horizon Dissolve (Smooth feather fade into active theme) */}
+          <div
+            className="hero-horizon-dissolve"
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 'clamp(160px, 24vh, 300px)',
+              pointerEvents: 'none',
+              zIndex: 2,
+              background: themeMode === 'Dim'
+                ? 'linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.18) 25%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.88) 78%, #000000 100%)'
+                : 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.22) 25%, rgba(255, 255, 255, 0.60) 50%, rgba(255, 255, 255, 0.92) 78%, #FFFFFF 100%)',
+              transition: 'background 0.4s ease',
+            }}
+          />
+
+          {/* Layer 7 — Bouncing scroll indicator */}
           <motion.div
             {...(reduced ? {} : { animate: { y: [0, 10, 0] } })}
             transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
@@ -348,7 +722,43 @@ export default function App() {
           </motion.div>
         </section>
 
-        <SectionDivider />
+        {/* ══════════════════════════════════════════════════
+            Non-Hero Sections Wrapper with ASCII Tiles Background
+            Isolated from Hero section. Hero is 100% frozen.
+            ══════════════════════════════════════════════════ */}
+        <div
+          id="non-hero-wrapper"
+          className={`non-hero-container theme-${themeMode.toLowerCase()}`}
+          style={{
+            position: 'relative',
+            isolation: 'isolate',
+          }}
+        >
+          {/* React Bits Pro ASCII Tiles Background */}
+          <AsciiTiles mode={themeMode} />
+
+          {/* Top Atmospheric Veil — Feather-fades ASCII tiles smoothly into the horizon */}
+          <div
+            className="non-hero-top-veil"
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 'clamp(100px, 14vh, 180px)',
+              pointerEvents: 'none',
+              zIndex: 1,
+              background: themeMode === 'Dim'
+                ? 'linear-gradient(to bottom, #000000 0%, rgba(0, 0, 0, 0.7) 35%, rgba(0, 0, 0, 0.25) 70%, rgba(0, 0, 0, 0) 100%)'
+                : 'linear-gradient(to bottom, #FFFFFF 0%, rgba(255, 255, 255, 0.7) 35%, rgba(255, 255, 255, 0.25) 70%, rgba(255, 255, 255, 0) 100%)',
+              transition: 'background 0.4s ease',
+            }}
+          />
+
+          {/* Non-hero content layer */}
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <SectionDivider />
 
         {/* ══════════════════════════════════════════════════
             2. About Section
@@ -358,15 +768,20 @@ export default function App() {
             <ScrollReveal direction="up">
               <span style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--accent-primary)', marginBottom: '1rem' }}>About</span>
             </ScrollReveal>
-            <div style={{ maxWidth: 720 }}>
+            <div style={{ maxWidth: 760 }}>
               <ScrollReveal direction="left">
-                <p style={{ fontSize: 'clamp(1.05rem, 2vw, 1.2rem)', lineHeight: 1.8, color: 'var(--text-primary)', marginBottom: '2rem' }}>
-                  I'm a developer and content creator based in India, building AI-powered tools and full-stack web applications. After a JEE dropper year, I shifted my focus toward AI and software development — and for the last 2+ years I've been deep in building, breaking, and shipping real products across EdTech, productivity, and developer tooling. I document every step of this journey publicly so others can learn along with me.
+                <p style={{ fontSize: 'clamp(1.05rem, 2vw, 1.2rem)', lineHeight: 1.8, color: 'var(--text-primary)', marginBottom: '1.75rem' }}>
+                  I'm Pratham Dahiya — a self-taught full-stack developer and builder operating under the banner of <strong>House VibeCoders</strong>. Currently a first-year Electrical &amp; Electronics Engineering (EEE) student at UIT RGPV, Bhopal, my transition into serious engineering was forged during an intensive JEE dropper year. That pivotal chapter instilled a relentless work ethic: learning directly by building and shipping real products, never staying passive.
                 </p>
               </ScrollReveal>
               <ScrollReveal direction="right" delay={0.1}>
+                <p style={{ fontSize: 'clamp(0.95rem, 1.5vw, 1.05rem)', lineHeight: 1.85, color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                  Instead of following endless tutorial loops, I architect web apps and AI-powered products for real clients and competitive hackathons. My shipped portfolio spans client e-commerce stores with headless Decap CMS, business booking engines with WhatsApp pipelines, and high-impact hackathon platforms like CivicLens (multimodal Gemini 2.5 Flash urban triage) and SIH Collab (real-time workspace with BYOK AES-256-GCM encryption).
+                </p>
+              </ScrollReveal>
+              <ScrollReveal direction="left" delay={0.15}>
                 <p style={{ fontSize: 'clamp(0.9rem, 1.5vw, 1rem)', lineHeight: 1.85, color: 'var(--text-secondary)' }}>
-                  My journey started early — back in 11th grade, I ran my own small page to gain hands-on experience in marketing and content creation. That foundation carried into a focused JEE prep year, then a full pivot into AI and software development. Since then I've built real products, integrated LLMs like Claude and Gemini into working applications, and documented the entire process for my audience on YouTube. On the creative side, I'm an editor who has cut 200+ proper videos (not counting memes) — around 15–20 of which are currently live on Instagram and YouTube. I work in After Effects and CapCut, and I care about craft whether I'm writing code or cutting a timeline.
+                  Beyond code, I'm an editor who has cut over 200 videos in After Effects and CapCut, sharing technical breakdowns and dev journey insights with 2,000+ subscribers on YouTube. Whether writing clean full-stack logic or refining visual interactions, I treat every project as a production-grade deliverable.
                 </p>
               </ScrollReveal>
             </div>
@@ -383,10 +798,10 @@ export default function App() {
             <ScrollReveal direction="up">
               <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem' }}>
                 {[
-                  { target: 8, suffix: '+', label: 'Projects Built / In Progress' },
-                  { target: 2, suffix: '+', label: 'Years of Experience in AI & Deployment' },
-                  { target: 2000, suffix: '+', label: 'YouTube Subscribers' },
-                  { target: 1, suffix: '', label: 'LLM Integrated (Claude & Gemini Server)' },
+                  { target: 17, suffix: '', label: 'Repositories on GitHub' },
+                  { target: 20, suffix: '+', label: 'GitHub Stars' },
+                  { target: 4, suffix: '', label: 'Client Projects Shipped' },
+                  { target: 2000, suffix: '+', label: 'Tech Community / YouTube Subscribers' },
                 ].map((stat, i) => (
                   <div key={i} style={{ textAlign: 'center', padding: '2rem 1rem' }}>
                     <span style={{ display: 'block', fontFamily: "'Sora', sans-serif", fontSize: 'clamp(3.5rem, 7vw, 4.5rem)', color: 'var(--accent-primary)', marginBottom: '0.75rem', lineHeight: 1 }}>
@@ -408,13 +823,51 @@ export default function App() {
         <section id="skills" aria-label="Skills and technologies" style={{ padding: 'clamp(5rem, 12vh, 10rem) 0', background: 'var(--bg-primary)' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(1.25rem, 4vw, 3rem)' }}>
             <ScrollReveal direction="up">
-              <span style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--accent-primary)', marginBottom: '1rem' }}>Tech Stack</span>
+              <span style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--accent-primary)', marginBottom: '1rem' }}>
+                <DecryptedText
+                  text="TECH STACK // STACK_MANIFEST"
+                  speed={40}
+                  maxIterations={12}
+                  sequential={true}
+                  revealDirection="start"
+                  animateOn="view"
+                />
+              </span>
               <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2.5rem' }}>Skills &amp; Technologies</h2>
             </ScrollReveal>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-              {skills.map((skill, i) => (
-                <ScrollReveal key={skill} direction="up" delay={i * 0.05}>
-                  <SkillBadge name={skill} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {skillCategories.map((group, groupIdx) => (
+                <ScrollReveal key={group.category} direction="up" delay={groupIdx * 0.06}>
+                  <div style={{
+                    background: 'var(--bg-card)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    borderRadius: 12,
+                    padding: '1.25rem 1.5rem',
+                    border: '1px solid var(--border-subtle)',
+                    boxShadow: 'var(--glass-shadow)',
+                  }}>
+                    <h3 style={{
+                      fontFamily: "'Sora', sans-serif",
+                      fontSize: '0.88rem',
+                      fontWeight: 700,
+                      color: 'var(--accent-primary)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      marginBottom: '0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-primary)', display: 'inline-block' }} />
+                      {group.category}
+                    </h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem' }}>
+                      {group.skills.map((skill) => (
+                        <SkillBadge key={skill} name={skill} />
+                      ))}
+                    </div>
+                  </div>
                 </ScrollReveal>
               ))}
             </div>
@@ -430,61 +883,408 @@ export default function App() {
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(1.25rem, 4vw, 3rem)' }}>
             <ScrollReveal direction="up">
               <span style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--accent-primary)', marginBottom: '1rem' }}>Work</span>
-              <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '3rem' }}>Projects</h2>
+              <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.5rem' }}>Featured Projects</h2>
             </ScrollReveal>
+
+            {/* Category Filter Tabs */}
+            <ScrollReveal direction="up" delay={0.05}>
+              <div
+                className="project-filters"
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.6rem',
+                  marginBottom: '2.5rem',
+                }}
+              >
+                {projectCategories.map((cat) => {
+                  const isSelected = selectedCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        padding: '0.55rem 1.25rem',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        transition: 'all 0.25s ease',
+                        background: isSelected ? 'var(--accent-primary)' : 'var(--bg-card)',
+                        color: isSelected ? '#ffffff' : 'var(--text-primary)',
+                        border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
+                        boxShadow: isSelected ? '0 4px 14px var(--accent-glow)' : 'none',
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+            </ScrollReveal>
+
             <div className="projects-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.5rem' }}>
-              {projects.map((p) => (
-                <div key={p.id} className="crt-card">
-                  <TiltCard>
-                    <div className="crt-card-content" style={{ padding: '2rem', position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: '1rem' }}>
-                        <h3 style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-primary)' }}>{p.name}</h3>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 500, padding: '0.3rem 0.75rem', borderRadius: 100, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap', flexShrink: 0, background: 'rgba(234, 88, 12, 0.1)', color: 'var(--accent-primary)', border: '1px solid rgba(234, 88, 12, 0.25)' }}>{p.badge}</span>
-                      </div>
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: '1.25rem', flex: 1 }}>{p.desc}</p>
-                      <div style={{ marginBottom: '1.25rem' }}>
-                        <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--accent-glow)', letterSpacing: '0.01em' }}>{p.tags}</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '1.5rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', flexWrap: 'wrap' }}>
-                        {p.links
-                          ? p.links.map((l, i) => (
-                            <a
-                              key={i}
-                              href={l.href}
-                              target="_blank"
-                              rel="noopener"
-                              aria-label={l.label}
+              {projects.map((p) => {
+                const isAllTab = selectedCategory === 'All';
+                const isVisible = isAllTab || p.category === selectedCategory;
+                if (!isVisible) return null;
+
+                // ── Part A: "All" Tab ONLY — Render PixelCard from React Bits ──
+                if (isAllTab) {
+                  const pixelColors = themeMode === 'Dim'
+                    ? '#a855f7,#8b5cf6,#6366f1,#c084fc,#ea580c'
+                    : '#cbd5e1,#94a3b8,#e2e8f0,#fdba74,#f59e0b';
+
+                  const pixelCardStyle = themeMode === 'Dim'
+                    ? {
+                        '--pixel-card-border': 'rgba(168, 85, 247, 0.25)',
+                        '--pixel-card-background': 'rgba(12, 10, 16, 0.85)',
+                        '--pixel-card-active-color': 'rgba(168, 85, 247, 0.22)',
+                      }
+                    : {
+                        '--pixel-card-border': 'rgba(0, 0, 0, 0.1)',
+                        '--pixel-card-background': 'rgba(255, 255, 255, 0.65)',
+                        '--pixel-card-active-color': 'rgba(234, 88, 12, 0.1)',
+                      };
+
+                  return (
+                    <PixelCard
+                      key={p.id}
+                      colors={pixelColors}
+                      gap={6}
+                      speed={30}
+                      style={pixelCardStyle}
+                    >
+                      <div className="pixel-card-content">
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.75rem' }}>
+                          <div>
+                            <span style={{ display: 'inline-block', fontSize: '0.68rem', fontWeight: 600, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>
+                              {p.category}
+                            </span>
+                            <h3 style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                              {p.name}
+                            </h3>
+                          </div>
+                          <span style={{
+                            fontSize: '0.68rem',
+                            fontWeight: 600,
+                            padding: '0.3rem 0.75rem',
+                            borderRadius: 100,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.06em',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
+                            background: p.liveUrl ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 107, 0, 0.12)',
+                            color: p.liveUrl ? '#22c55e' : 'var(--accent-secondary)',
+                            border: p.liveUrl ? '1px solid rgba(34, 197, 94, 0.35)' : '1px solid var(--border-subtle)',
+                          }}>
+                            {p.liveUrl ? 'Live' : 'GitHub'}
+                          </span>
+                        </div>
+
+                        <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-secondary)', marginBottom: '0.65rem', lineHeight: 1.4 }}>
+                          {p.tagline}
+                        </p>
+
+                        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: '1.25rem', flex: 1 }}>
+                          {p.desc}
+                        </p>
+
+                        {/* Tech badges */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
+                          {p.tech.map((t) => (
+                            <span
+                              key={t}
                               style={{
-                                fontSize: '0.8rem', fontWeight: 500,
-                                color: i === 0 ? '#fff' : 'var(--accent-primary)',
-                                background: i === 0 ? 'var(--accent-primary)' : 'transparent',
-                                border: i === 0 ? '1px solid var(--accent-primary)' : '1px solid rgba(234,88,12,0.3)',
-                                padding: '0.4rem 0.9rem',
-                                borderRadius: 6,
-                                transition: 'all 0.25s ease',
-                                display: 'inline-flex', alignItems: 'center',
+                                fontSize: '0.72rem',
+                                padding: '3px 8px',
+                                borderRadius: 4,
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-subtle)',
+                                color: 'var(--text-secondary)',
+                                fontFamily: 'monospace',
                               }}
                             >
-                              {l.text}
-                            </a>
-                          ))
-                          : (
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Card Buttons */}
+                        <div style={{ display: 'flex', gap: '0.8rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', flexWrap: 'wrap' }}>
+                          {p.liveUrl ? (
+                            <>
+                              <a
+                                href={p.liveUrl}
+                                target="_blank"
+                                rel="noopener"
+                                aria-label={`Live demo of ${p.name}`}
+                                style={{
+                                  fontSize: '0.82rem',
+                                  fontWeight: 600,
+                                  color: '#ffffff',
+                                  background: 'var(--accent-primary)',
+                                  border: '1px solid var(--accent-primary)',
+                                  padding: '0.45rem 1rem',
+                                  borderRadius: 6,
+                                  transition: 'all 0.25s ease',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                  boxShadow: '0 2px 10px var(--accent-glow)',
+                                }}
+                              >
+                                Live Demo ↗
+                              </a>
+                              <a
+                                href={p.repoUrl}
+                                target="_blank"
+                                rel="noopener"
+                                aria-label={`View code for ${p.name} on GitHub`}
+                                style={{
+                                  fontSize: '0.82rem',
+                                  fontWeight: 500,
+                                  color: 'var(--text-primary)',
+                                  background: 'var(--bg-card)',
+                                  border: '1px solid var(--border-subtle)',
+                                  padding: '0.45rem 1rem',
+                                  borderRadius: 6,
+                                  transition: 'all 0.25s ease',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                }}
+                              >
+                                View Code ↗
+                              </a>
+                            </>
+                          ) : (
                             <a
-                              href={p.link}
-                              style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--accent-primary)', transition: 'color 0.3s ease' }}
-                              {...(p.external ? { target: '_blank', rel: 'noopener' } : {})}
-                              aria-label={`${p.linkText} ${p.name}`}
+                              href={p.repoUrl}
+                              target="_blank"
+                              rel="noopener"
+                              aria-label={`View code for ${p.name} on GitHub`}
+                              style={{
+                                fontSize: '0.82rem',
+                                fontWeight: 600,
+                                color: '#ffffff',
+                                background: 'var(--accent-primary)',
+                                border: '1px solid var(--accent-primary)',
+                                padding: '0.45rem 1rem',
+                                borderRadius: 6,
+                                transition: 'all 0.25s ease',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                boxShadow: '0 2px 10px var(--accent-glow)',
+                              }}
                             >
-                              {p.linkText}
+                              View Code ↗
                             </a>
-                          )
-                        }
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </TiltCard>
-                </div>
-              ))}
+                    </PixelCard>
+                  );
+                }
+
+                // ── Part B: Other 4 Tabs — Retain card treatment + Trigger 3D Lanyard on Click ──
+                return (
+                  <div
+                    key={p.id}
+                    className="crt-card"
+                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => {
+                      if (e.target.closest('a') || e.target.closest('.action-link')) return;
+                      setSelectedLanyardProject(p);
+                    }}
+                    title="Click to inspect 3D interactive physics pass"
+                  >
+                    <TiltCard>
+                      <div className="crt-card-content" style={{ padding: '2rem', position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.75rem' }}>
+                          <div>
+                            <span style={{ display: 'inline-block', fontSize: '0.68rem', fontWeight: 600, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>
+                              {p.category}
+                            </span>
+                            <h3 style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                              {p.name}
+                            </h3>
+                          </div>
+                          <span style={{
+                            fontSize: '0.68rem',
+                            fontWeight: 600,
+                            padding: '0.3rem 0.75rem',
+                            borderRadius: 100,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.06em',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
+                            background: p.liveUrl ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 107, 0, 0.12)',
+                            color: p.liveUrl ? '#22c55e' : 'var(--accent-secondary)',
+                            border: p.liveUrl ? '1px solid rgba(34, 197, 94, 0.35)' : '1px solid var(--border-subtle)',
+                          }}>
+                            {p.liveUrl ? 'Live' : 'GitHub'}
+                          </span>
+                        </div>
+
+                        <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-secondary)', marginBottom: '0.65rem', lineHeight: 1.4 }}>
+                          {p.tagline}
+                        </p>
+
+                        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: '1.25rem', flex: 1 }}>
+                          {p.desc}
+                        </p>
+
+                        {/* Tech badges */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
+                          {p.tech.map((t) => (
+                            <span
+                              key={t}
+                              style={{
+                                fontSize: '0.72rem',
+                                padding: '3px 8px',
+                                borderRadius: 4,
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-subtle)',
+                                color: 'var(--text-secondary)',
+                                fontFamily: 'monospace',
+                              }}
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Card Buttons + 3D Pass Trigger */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.6rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                            {p.liveUrl ? (
+                              <>
+                                <a
+                                  href={p.liveUrl}
+                                  target="_blank"
+                                  rel="noopener"
+                                  className="action-link"
+                                  aria-label={`Live demo of ${p.name}`}
+                                  style={{
+                                    fontSize: '0.82rem',
+                                    fontWeight: 600,
+                                    color: '#ffffff',
+                                    background: 'var(--accent-primary)',
+                                    border: '1px solid var(--accent-primary)',
+                                    padding: '0.45rem 0.9rem',
+                                    borderRadius: 6,
+                                    transition: 'all 0.25s ease',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                    boxShadow: '0 2px 10px var(--accent-glow)',
+                                  }}
+                                >
+                                  Live ↗
+                                </a>
+                                <a
+                                  href={p.repoUrl}
+                                  target="_blank"
+                                  rel="noopener"
+                                  className="action-link"
+                                  aria-label={`View code for ${p.name} on GitHub`}
+                                  style={{
+                                    fontSize: '0.82rem',
+                                    fontWeight: 500,
+                                    color: 'var(--text-primary)',
+                                    background: 'var(--bg-card)',
+                                    border: '1px solid var(--border-subtle)',
+                                    padding: '0.45rem 0.9rem',
+                                    borderRadius: 6,
+                                    transition: 'all 0.25s ease',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                  }}
+                                >
+                                  Code ↗
+                                </a>
+                              </>
+                            ) : (
+                              <a
+                                href={p.repoUrl}
+                                target="_blank"
+                                rel="noopener"
+                                className="action-link"
+                                aria-label={`View code for ${p.name} on GitHub`}
+                                style={{
+                                  fontSize: '0.82rem',
+                                  fontWeight: 600,
+                                  color: '#ffffff',
+                                  background: 'var(--accent-primary)',
+                                  border: '1px solid var(--accent-primary)',
+                                  padding: '0.45rem 0.9rem',
+                                  borderRadius: 6,
+                                  transition: 'all 0.25s ease',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                  boxShadow: '0 2px 10px var(--accent-glow)',
+                                }}
+                              >
+                                Code ↗
+                              </a>
+                            )}
+                          </div>
+
+                          {/* 3D Lanyard Preview Trigger Button */}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedLanyardProject(p)}
+                            style={{
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              color: 'var(--accent-primary)',
+                              background: 'rgba(234, 88, 12, 0.08)',
+                              border: '1px solid rgba(234, 88, 12, 0.28)',
+                              padding: '0.42rem 0.85rem',
+                              borderRadius: 6,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'var(--accent-primary)';
+                              e.currentTarget.style.color = '#ffffff';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(234, 88, 12, 0.08)';
+                              e.currentTarget.style.color = 'var(--accent-primary)';
+                            }}
+                          >
+                            <span>🪪 3D Card</span>
+                          </button>
+                        </div>
+                      </div>
+                    </TiltCard>
+                  </div>
+                );
+              })}
             </div>
+
+            {/* ── Part B: Lazy-Mounted 3D Physics Lanyard Modal ── */}
+            <AnimatePresence>
+              {selectedLanyardProject && (
+                <Suspense fallback={null}>
+                  <ProjectLanyardModal
+                    project={selectedLanyardProject}
+                    onClose={() => setSelectedLanyardProject(null)}
+                    themeMode={themeMode}
+                  />
+                </Suspense>
+              )}
+            </AnimatePresence>
           </div>
         </section>
 
@@ -502,7 +1302,7 @@ export default function App() {
 
             {/* Showreel Embed */}
             <ScrollReveal direction="up" delay={0.1}>
-              <div id="showreel" style={{ aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(234,88,12,0.15)', marginBottom: '3rem', background: 'rgba(255,255,255,0.55)', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+              <div id="showreel" style={{ aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-subtle)', marginBottom: '3rem', background: 'var(--bg-card)', boxShadow: 'var(--glass-shadow)' }}>
                 <iframe
                   width="100%"
                   height="100%"
@@ -518,12 +1318,12 @@ export default function App() {
 
             {/* YouTube Channel Callout */}
             <ScrollReveal direction="up" delay={0.15}>
-              <div className="yt-callout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2rem', padding: '2rem 2.5rem', border: '1px solid rgba(234,88,12,0.15)', borderRadius: 10, background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', marginBottom: '3rem', flexWrap: 'wrap', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+              <div className="yt-callout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2rem', padding: '2rem 2.5rem', border: '1px solid var(--border-subtle)', borderRadius: 10, background: 'var(--bg-card)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', marginBottom: '3rem', flexWrap: 'wrap', boxShadow: 'var(--glass-shadow)' }}>
                 <div>
                   <h3 style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>YouTube — Know Your Tech</h3>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>2,000+ subscribers · AI tools, dev builds &amp; real-world tutorials</p>
                 </div>
-                <a href="https://youtube.com/@hey.prathamdahiya?si=lLfKA1n_icF0WDHe" target="_blank" rel="noopener" aria-label="Visit YouTube channel" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.8rem 1.8rem', fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', fontWeight: 500, borderRadius: 6, background: 'var(--accent-primary)', color: '#fff', border: '1px solid var(--accent-primary)', transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}>Visit Channel →</a>
+                <a href="https://youtube.com/@hey.prathamdahiya?si=lLfKA1n_icF0WDHe" target="_blank" rel="noopener" aria-label="Visit YouTube channel" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.8rem 1.8rem', fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', fontWeight: 500, borderRadius: 6, background: 'var(--accent-primary)', color: '#fff', border: '1px solid var(--accent-primary)', transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)', boxShadow: '0 2px 10px var(--accent-glow)' }}>Visit Channel →</a>
               </div>
             </ScrollReveal>
 
@@ -532,7 +1332,7 @@ export default function App() {
               <div className="video-thumbs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
                 {['Building an AI App from Scratch', 'Claude API Deep Dive', 'My Dev Setup & Workflow'].map((title, i) => (
                   <a key={i} href="#" aria-label={`Video thumbnail ${i + 1}`} style={{ display: 'block', transition: 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-                    <div role="img" aria-label="Video thumbnail placeholder" style={{ aspectRatio: '16/9', borderRadius: 8, background: 'rgba(255,255,255,0.55)', backdropFilter: 'blur(8px)', border: '1px solid rgba(234,88,12,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', marginBottom: '0.75rem', transition: 'border-color 0.3s ease', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+                    <div role="img" aria-label="Video thumbnail placeholder" style={{ aspectRatio: '16/9', borderRadius: 8, background: 'var(--bg-card)', backdropFilter: 'blur(8px)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', marginBottom: '0.75rem', transition: 'border-color 0.3s ease', boxShadow: 'var(--glass-shadow)' }}>
                       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ opacity: 0.35 }}>
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                       </svg>
@@ -548,17 +1348,50 @@ export default function App() {
         <SectionDivider />
 
         {/* ══════════════════════════════════════════════════
+            6.5. Ask About Me // AI Chat Agent
+            ══════════════════════════════════════════════════ */}
+        <section id="ask-agent" aria-label="Ask about Pratham AI Agent" style={{ padding: 'clamp(5rem, 12vh, 10rem) 0', background: 'var(--bg-primary)', position: 'relative' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(1.25rem, 4vw, 3rem)' }}>
+            <ScrollReveal direction="up">
+              <span style={{ display: 'block', fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--accent-primary)', marginBottom: '1rem', textAlign: 'center' }}>
+                AI Agent // Knowledge_Base
+              </span>
+              <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem', textAlign: 'center' }}>
+                Ask About Me
+              </h2>
+              <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', maxWidth: 640, margin: '0 auto 3rem', textAlign: 'center', lineHeight: 1.6 }}>
+                Curious about my projects, engineering background, hackathons, or stack? Ask my custom AI assistant, grounded in my verified knowledge base.
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.1}>
+              <AgentChat />
+            </ScrollReveal>
+          </div>
+        </section>
+
+        <SectionDivider />
+
+        {/* ══════════════════════════════════════════════════
             7. Contact / Closing CTA (Effect 8)
             ══════════════════════════════════════════════════ */}
         <section id="contact" aria-label="Contact" style={{ padding: 'clamp(5rem, 12vh, 10rem) 0', textAlign: 'center', background: 'var(--bg-secondary)', position: 'relative' }}>
           {/* Grid + glow background */}
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(234,88,12,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(234,88,12,0.05) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-            <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: 800, height: 400, background: 'radial-gradient(ellipse at 50% 100%, rgba(234,88,12,0.10), transparent 70%)', filter: 'blur(40px)' }} />
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+            <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: 800, height: 400, background: 'radial-gradient(ellipse at 50% 100%, var(--accent-glow), transparent 70%)', filter: 'blur(40px)' }} />
           </div>
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(1.25rem, 4vw, 3rem)', position: 'relative', zIndex: 2 }}>
             <ScrollReveal direction="up">
-              <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.4rem)', fontWeight: 700, color: 'var(--text-primary)', maxWidth: 700, margin: '0 auto 3rem', lineHeight: 1.35 }}>Open to collaborations, freelance work, and interesting problems — let's build something.</h2>
+              <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(2rem, 4.5vw, 3.4rem)', fontWeight: 700, color: 'var(--text-primary)', maxWidth: 700, margin: '0 auto 3rem', lineHeight: 1.35 }}>
+                <BlurText
+                  text="Open to collaborations, freelance work, and interesting problems — let's build something."
+                  delay={55}
+                  animateBy="words"
+                  direction="top"
+                  stepDuration={0.42}
+                />
+              </h2>
             </ScrollReveal>
             <ScrollReveal direction="up" delay={0.1}>
               <div className="contact-links" style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
@@ -582,16 +1415,18 @@ export default function App() {
             </ScrollReveal>
           </div>
         </section>
-      </main>
 
-      {/* ══════════════════════════════════════════════════
-          Footer
-          ══════════════════════════════════════════════════ */}
-      <footer style={{ padding: '2rem 0', textAlign: 'center', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-primary)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(1.25rem, 4vw, 3rem)' }}>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '0.03em' }}>&copy; 2026 · Built with intention.</p>
+        {/* ══════════════════════════════════════════════════
+            Footer
+            ══════════════════════════════════════════════════ */}
+        <footer style={{ padding: '2rem 0', textAlign: 'center', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-primary)' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 clamp(1.25rem, 4vw, 3rem)' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '0.03em' }}>&copy; 2026 · Built with intention.</p>
+          </div>
+        </footer>
+          </div>
         </div>
-      </footer>
+      </main>
     </>
   );
 }
