@@ -23,16 +23,27 @@ export default function AgentChat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [errorState, setErrorState] = useState(null); // { type: 'rate_limit' | 'network', message: string }
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const isInitialMount = useRef(true);
   const inputRef = useRef(null);
   const abortControllerRef = useRef(null);
 
-  // Auto-scroll to bottom of chat
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Auto-scroll within the chat container ONLY (does NOT hijack page/window scroll)
+  const scrollToBottom = (behavior = 'smooth') => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior,
+      });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    scrollToBottom(isStreaming ? 'auto' : 'smooth');
   }, [messages, isStreaming, isLoading]);
 
   const handleSend = async (textToSend) => {
@@ -287,6 +298,7 @@ export default function AgentChat() {
 
       {/* ── Messages Feed ── */}
       <div
+        ref={messagesContainerRef}
         style={{
           height: 'clamp(320px, 45vh, 460px)',
           overflowY: 'auto',

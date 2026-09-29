@@ -25,11 +25,20 @@ const ProjectLanyardModal = lazy(() => import('./components/ProjectLanyardModal'
    ═══════════════════════════════════════════════════════ */
 function useSmoothScroll() {
   useEffect(() => {
+    // If opening without a specific anchor hash, always land at the front / hero page
+    if (!window.location.hash) {
+      window.scrollTo(0, 0);
+    }
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
+
+    if (!window.location.hash) {
+      lenis.scrollTo(0, { immediate: true });
+    }
 
     function raf(time) {
       lenis.raf(time);
@@ -467,7 +476,7 @@ export default function App() {
         {/* ══════════════════════════════════════════════════
             1. Hero Section (Effect 3 — All Layers)
             ══════════════════════════════════════════════════ */}
-        <section id="hero" aria-label="Introduction" style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <section id="hero" className="hero-section" aria-label="Introduction" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 
           {/* Interactive Background — Glass Reveal (Pristine color inside circle, Blurry B&W Sketch & Glitch outside) */}
           <GlassReveal
@@ -510,10 +519,11 @@ export default function App() {
             }}
           >
             {/* ── Text column ── */}
-            <div style={{ flex: 1, minWidth: 0, maxWidth: 780 }}>
+            <div className="hero-text-col" style={{ flex: 1, minWidth: 0, maxWidth: 780 }}>
 
               {/* Brand Pill */}
               <motion.div
+                className="hero-brand-pill"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.6 }}
                 style={{
@@ -538,6 +548,7 @@ export default function App() {
 
               {/* Layer 5 — TechText interactive name display */}
               <motion.div
+                className="hero-name-wrapper"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 60 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
                 style={{
@@ -572,6 +583,7 @@ export default function App() {
               </motion.div>
 
               <motion.h2
+                className="hero-subheading"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                 style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(1.25rem, 3vw, 2rem)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem', lineHeight: 1.2 }}
@@ -580,6 +592,7 @@ export default function App() {
               </motion.h2>
 
               <motion.p
+                className="hero-description"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
                 style={{ fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)', color: 'var(--text-secondary)', maxWidth: 500, marginBottom: '2rem', lineHeight: 1.65 }}
@@ -600,6 +613,7 @@ export default function App() {
 
               {/* Layer 5.5 — Credibility stat strip near Hero with SplitFlap departure-board ticker */}
               <motion.div
+                className="hero-credibility-card"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.8, delay: 0.35 }}
                 style={{
@@ -619,8 +633,8 @@ export default function App() {
                 }}
               >
                 {/* Departure Board Flip Ticker */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', paddingBottom: 2 }}>
-                  <span style={{
+                <div className="hero-ticker-row" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', paddingBottom: 2 }}>
+                  <span className="hero-ticker-label" style={{
                     fontSize: '0.68rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
@@ -635,6 +649,7 @@ export default function App() {
                     Live Terminal:
                   </span>
                   <SplitFlapText
+                    className="hero-split-flap"
                     words={['17 REPOSITORIES', '20+ GITHUB STARS', '4 CLIENT BUILDS', 'PROD VERIFIED']}
                     fontSize={14}
                     tileRadius={4}
@@ -649,34 +664,34 @@ export default function App() {
 
                 <div style={{ width: '100%', height: 1, background: 'rgba(234, 88, 12, 0.14)' }} />
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0.75rem, 2vw, 1.6rem)', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
+                <div className="hero-stats-row" style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0.75rem, 2vw, 1.6rem)', flexWrap: 'wrap' }}>
+                  <div className="hero-stat-item" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span className="stat-number" style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
                       <StatCounter target={17} />
                     </span>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span className="stat-label" style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Repositories
                     </span>
                   </div>
 
-                  <div style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
+                  <div className="hero-stat-divider" style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
 
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
+                  <div className="hero-stat-item" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span className="stat-number" style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
                       <StatCounter target={20} suffix="+" />
                     </span>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span className="stat-label" style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Stars
                     </span>
                   </div>
 
-                  <div style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
+                  <div className="hero-stat-divider" style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
 
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
+                  <div className="hero-stat-item" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span className="stat-number" style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
                       <StatCounter target={4} />
                     </span>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span className="stat-label" style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Client Projects Shipped
                     </span>
                   </div>
@@ -706,6 +721,7 @@ export default function App() {
 
           {/* Layer 7 — Bouncing scroll indicator */}
           <motion.div
+            className="hero-scroll-indicator"
             {...(reduced ? {} : { animate: { y: [0, 10, 0] } })}
             transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
             style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 3 }}
