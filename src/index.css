@@ -126,30 +126,16 @@ img { max-width: 100%; display: block; }
    Responsive
    ═══════════════════════════════════════════════════════ */
 /* ═══════════════════════════════════════════════════════
-   Hero Section Base & Responsive Optimization
+   Hero Inner — responsive flex
    ═══════════════════════════════════════════════════════ */
-.hero-section {
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow: hidden;
-}
-
 .hero-inner {
   flex-direction: row;
 }
-
 @media (max-width: 900px) {
   .hero-inner {
-    flex-direction: column !important;
+    flex-direction: column-reverse !important;
     text-align: center;
     align-items: center !important;
-    justify-content: center;
-  }
-  .hero-text-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
   }
   .hero-inner .hero-ctas {
     justify-content: center;
@@ -161,148 +147,6 @@ img { max-width: 100%; display: block; }
 }
 
 @media (max-width: 768px) {
-  /* Dynamic mobile viewport container without clipping */
-  .hero-section {
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-x: hidden !important;
-    overflow-y: visible !important;
-    padding-top: calc(64px + 1.25rem) !important;
-    padding-bottom: 3.5rem !important;
-  }
-
-  .hero-inner {
-    padding: 0 1rem !important;
-    width: 100% !important;
-    max-width: 540px !important;
-  }
-
-  .hero-text-col {
-    width: 100% !important;
-  }
-
-  /* Centered and compact brand pill */
-  .hero-brand-pill {
-    margin: 0 auto 0.65rem auto !important;
-    font-size: 0.72rem !important;
-    padding: 5px 12px !important;
-  }
-
-  /* Responsive canvas height for "Pratham Dahiya" name */
-  .hero-name-wrapper {
-    height: clamp(54px, 14vw, 96px) !important;
-    margin-bottom: 0.45rem !important;
-    width: 100% !important;
-  }
-
-  /* Punchy headline */
-  .hero-subheading {
-    font-size: clamp(1.3rem, 5.2vw, 1.85rem) !important;
-    line-height: 1.24 !important;
-    margin-bottom: 0.75rem !important;
-  }
-
-  /* Description paragraph optimized for readability */
-  .hero-description {
-    font-size: clamp(0.84rem, 3.4vw, 0.94rem) !important;
-    line-height: 1.55 !important;
-    margin-bottom: 1.25rem !important;
-    max-width: 440px !important;
-  }
-
-  /* High-converting 2-tier thumb-friendly CTA layout */
-  .hero-ctas {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.65rem !important;
-    width: 100% !important;
-    max-width: 360px !important;
-    margin: 0 auto !important;
-  }
-
-  .hero-ctas a#cta-projects {
-    grid-column: 1 / -1 !important;
-    width: 100% !important;
-    max-width: none !important;
-    padding: 0.75rem 1.4rem !important;
-    font-size: 0.88rem !important;
-    font-weight: 600 !important;
-    box-shadow: 0 4px 16px var(--accent-glow) !important;
-  }
-
-  .hero-ctas a#cta-showreel,
-  .hero-ctas a#cta-contact {
-    width: 100% !important;
-    max-width: none !important;
-    padding: 0.65rem 0.8rem !important;
-    font-size: 0.8rem !important;
-  }
-
-  /* Credibility stat card */
-  .hero-credibility-card {
-    width: 100% !important;
-    max-width: 380px !important;
-    margin: 1.25rem auto 0 auto !important;
-    padding: 0.8rem 1rem !important;
-    gap: 0.65rem !important;
-  }
-
-  .hero-ticker-row {
-    justify-content: center !important;
-    gap: 6px !important;
-    padding-bottom: 0 !important;
-  }
-
-  .hero-ticker-label {
-    font-size: 0.62rem !important;
-    letter-spacing: 0.06em !important;
-  }
-
-  .hero-split-flap {
-    --split-flap-font-size: clamp(10px, 2.7vw, 13px) !important;
-    --split-flap-gap: clamp(1.5px, 0.5vw, 2.5px) !important;
-  }
-
-  .hero-stats-row {
-    display: grid !important;
-    grid-template-columns: 1fr auto 1fr auto 1fr !important;
-    align-items: center !important;
-    justify-items: center !important;
-    width: 100% !important;
-    gap: 0.35rem !important;
-  }
-
-  .hero-stat-item {
-    text-align: center !important;
-    align-items: center !important;
-  }
-
-  .hero-stat-item .stat-number {
-    font-size: 1.15rem !important;
-  }
-
-  .hero-stat-item .stat-label {
-    font-size: 0.62rem !important;
-    letter-spacing: 0.02em !important;
-    line-height: 1.2 !important;
-  }
-
-  .hero-stat-divider {
-    height: 22px !important;
-  }
-
-  /* Compact horizon dissolve to avoid fogging hero content on mobile */
-  .hero-horizon-dissolve {
-    height: clamp(60px, 10vh, 100px) !important;
-  }
-
-  /* Subtle scroll indicator placement */
-  .hero-scroll-indicator {
-    bottom: 12px !important;
-    transform: translateX(-50%) scale(0.7) !important;
-    opacity: 0.7;
-  }
-
   .nav-toggle { display: flex !important; }
   .nav-links {
     position: fixed !important;
@@ -328,18 +172,17 @@ img { max-width: 100%; display: block; }
   .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .projects-grid { grid-template-columns: 1fr !important; }
   .video-thumbs-grid { grid-template-columns: 1fr !important; }
+  .hero-ctas {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .hero-ctas a { width: 100%; max-width: 260px; }
   .yt-callout {
     flex-direction: column !important;
     text-align: center !important;
     padding: 1.5rem !important;
   }
   .contact-links { gap: 1.5rem !important; }
-}
-
-@media (max-width: 768px) and (max-height: 720px) {
-  .hero-scroll-indicator {
-    display: none !important;
-  }
 }
 
 @media (max-width: 480px) {
@@ -365,7 +208,17 @@ img { max-width: 100%; display: block; }
 .non-hero-container {
   position: relative;
   isolation: isolate;
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition: background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), color 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.non-hero-container.theme-transitioning,
+.non-hero-container.theme-transitioning *,
+.non-hero-container.theme-transitioning *::before,
+.non-hero-container.theme-transitioning *::after {
+  transition: background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 /* "Dim" Mode: Pure OLED Black base (#000000), crisp white/silver text, vibrant amber highlights */

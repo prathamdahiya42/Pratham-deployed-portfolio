@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import Lanyard from './Lanyard';
 import { getProjectLanyardVisuals } from '../utils/lanyardBadges';
@@ -16,6 +16,10 @@ export default function ProjectLanyardModal({ project, onClose, themeMode = 'Dim
 
   const visuals = getProjectLanyardVisuals(project);
   const isDim = themeMode === 'Dim';
+  const textColor = isDim ? '#FFFFFF' : '#0F172A';
+  const textSecondary = isDim ? '#A1A1AA' : '#475569';
+  const textMuted = isDim ? '#71717A' : '#94A3B8';
+  const borderSubtle = isDim ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)';
 
   return (
     <motion.div
@@ -26,7 +30,7 @@ export default function ProjectLanyardModal({ project, onClose, themeMode = 'Dim
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 99999,
+        zIndex: 999999,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -89,7 +93,7 @@ export default function ProjectLanyardModal({ project, onClose, themeMode = 'Dim
               >
                 {project.category}
               </span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: '0.75rem', color: textMuted }}>
                 3D Physics Lanyard Pass
               </span>
             </div>
@@ -98,7 +102,7 @@ export default function ProjectLanyardModal({ project, onClose, themeMode = 'Dim
                 fontFamily: "'Sora', sans-serif",
                 fontSize: '1.3rem',
                 fontWeight: 800,
-                color: 'var(--text-primary)',
+                color: textColor,
                 margin: 0,
               }}
             >
@@ -115,8 +119,8 @@ export default function ProjectLanyardModal({ project, onClose, themeMode = 'Dim
               height: 36,
               borderRadius: '50%',
               background: isDim ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
-              border: isDim ? '1px solid rgba(255, 255, 255, 0.14)' : '1px solid rgba(0, 0, 0, 0.1)',
-              color: 'var(--text-primary)',
+              border: `1px solid ${borderSubtle}`,
+              color: textColor,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -130,7 +134,7 @@ export default function ProjectLanyardModal({ project, onClose, themeMode = 'Dim
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = isDim ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
-              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.color = textColor;
             }}
           >
             ✕
@@ -173,14 +177,45 @@ export default function ProjectLanyardModal({ project, onClose, themeMode = 'Dim
             Click &amp; drag to rotate 360° · Inspect Front &amp; Back
           </div>
 
-          <Lanyard
-            position={[0, 0, 14]}
-            fov={26}
-            transparent={true}
-            frontImage={visuals.frontImage}
-            backImage={visuals.backImage}
-            imageFit="cover"
-          />
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 14,
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    border: '3px solid rgba(234, 88, 12, 0.2)',
+                    borderTop: '3px solid var(--accent-primary)',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite',
+                  }}
+                />
+                <span style={{ fontSize: '0.8rem', fontWeight: 500, letterSpacing: '0.04em' }}>
+                  Loading 3D Canvas...
+                </span>
+              </div>
+            }
+          >
+            <Lanyard
+              position={[0, 0, 14]}
+              fov={26}
+              transparent={true}
+              frontImage={visuals.frontImage}
+              backImage={visuals.backImage}
+              imageFit="cover"
+            />
+          </Suspense>
         </div>
 
         {/* ── Modal Footer Bar ── */}
@@ -205,9 +240,9 @@ export default function ProjectLanyardModal({ project, onClose, themeMode = 'Dim
                   fontSize: '0.72rem',
                   padding: '3px 8px',
                   borderRadius: 4,
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-secondary)',
+                  background: isDim ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)',
+                  border: `1px solid ${borderSubtle}`,
+                  color: textSecondary,
                   fontFamily: 'monospace',
                 }}
               >
@@ -246,9 +281,9 @@ export default function ProjectLanyardModal({ project, onClose, themeMode = 'Dim
                 style={{
                   fontSize: '0.82rem',
                   fontWeight: 500,
-                  color: 'var(--text-primary)',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
+                  color: textColor,
+                  background: isDim ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)',
+                  border: `1px solid ${borderSubtle}`,
                   padding: '0.45rem 1rem',
                   borderRadius: 6,
                   display: 'inline-flex',

@@ -14,31 +14,28 @@ import DecryptedText from './components/DecryptedText';
 import BlurText from './components/BlurText';
 import AgentChat from './components/AgentChat';
 import PixelCard from './components/PixelCard';
+import ThemeToggle from './components/ThemeToggle';
+import ThemeTransitionRipple from './components/ThemeTransitionRipple';
+import { playThemeSound } from './utils/themeSound';
+import { AgentProvider } from './context/AgentContext';
+import AgentWidget from './components/AgentWidget';
 import './animations/crtReveal.css';
 import { initRubberTear } from './animations/rubberTear';
 import './animations/rubberTear.css';
 
 const ProjectLanyardModal = lazy(() => import('./components/ProjectLanyardModal'));
+import AgentChatModal from './components/AgentChatModal';
 
 /* ═══════════════════════════════════════════════════════
    Lenis Smooth Scroll Hook
    ═══════════════════════════════════════════════════════ */
 function useSmoothScroll() {
   useEffect(() => {
-    // If opening without a specific anchor hash, always land at the front / hero page
-    if (!window.location.hash) {
-      window.scrollTo(0, 0);
-    }
-
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
-
-    if (!window.location.hash) {
-      lenis.scrollTo(0, { immediate: true });
-    }
 
     function raf(time) {
       lenis.raf(time);
@@ -320,6 +317,29 @@ export default function App() {
     }
   }, [themeMode]);
 
+  const [themeRipple, setThemeRipple] = useState(null);
+  const [themeTransitioning, setThemeTransitioning] = useState(false);
+
+  const handleThemeToggle = (nextMode, coords) => {
+    // 1. Play harmonious musical chime
+    playThemeSound(nextMode);
+
+    // 2. Trigger expanding radial dawn/twilight ripple
+    setThemeRipple({
+      x: coords?.x ?? (typeof window !== 'undefined' ? window.innerWidth / 2 : 0),
+      y: coords?.y ?? 60,
+      mode: nextMode,
+      id: Date.now(),
+    });
+
+    // 3. Mark transition state for smooth CSS cascade
+    setThemeTransitioning(true);
+    setTimeout(() => setThemeTransitioning(false), 550);
+
+    // 4. Update mode
+    setThemeMode(nextMode);
+  };
+
   /* Rubber membrane tear reveal — additive overlay on project cards for non-All tabs */
   useEffect(() => {
     if (selectedCategory !== 'All') {
@@ -346,7 +366,7 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <AgentProvider>
       {/* ── Noise Texture Overlay ── */}
       <div
         aria-hidden="true"
@@ -355,6 +375,13 @@ export default function App() {
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
           opacity: 0.035,
         }}
+      />
+
+      {/* ── Theme Switch Radial Ripple Animation ── */}
+      <ThemeTransitionRipple
+        ripple={themeRipple}
+        onComplete={() => setThemeRipple(null)}
+        reducedMotion={Boolean(reduced)}
       />
 
       {/* ── Custom Cursor ── */}
@@ -423,51 +450,11 @@ export default function App() {
               ))}
             </ul>
 
-            {/* Non-Hero Theme Toggle: "Dim" vs "Daylight" */}
-            <button
-              type="button"
-              onClick={() => setThemeMode((prev) => (prev === 'Dim' ? 'Daylight' : 'Dim'))}
-              aria-label={`Current non-hero theme is ${themeMode}. Click to switch to ${themeMode === 'Dim' ? 'Daylight' : 'Dim'}`}
-              title={`Switch non-hero theme to ${themeMode === 'Dim' ? 'Daylight' : 'Dim'}`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 14px',
-                borderRadius: 100,
-                border: themeMode === 'Dim'
-                  ? '1px solid rgba(255, 255, 255, 0.18)'
-                  : '1px solid rgba(0, 0, 0, 0.12)',
-                background: themeMode === 'Dim'
-                  ? 'rgba(10, 10, 10, 0.88)'
-                  : 'rgba(255, 255, 255, 0.92)',
-                color: themeMode === 'Dim' ? '#FFFFFF' : '#0F172A',
-                fontFamily: "'Inter', sans-serif",
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                letterSpacing: '0.04em',
-                cursor: 'pointer',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                boxShadow: themeMode === 'Dim'
-                  ? '0 0 16px rgba(255, 107, 0, 0.22)'
-                  : '0 2px 10px rgba(0, 0, 0, 0.06)',
-                zIndex: 1002,
-              }}
-            >
-              <span
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  background: themeMode === 'Dim' ? '#FF6B00' : '#F59E0B',
-                  boxShadow: themeMode === 'Dim' ? '0 0 8px #FF6B00' : '0 0 6px #FBBF24',
-                  display: 'inline-block',
-                }}
-              />
-              <span>{themeMode}</span>
-            </button>
+            {/* Non-Hero Theme Toggle: "Dim" vs "Daylight" with micro-animations & musical feedback */}
+            <ThemeToggle
+              themeMode={themeMode}
+              onToggle={handleThemeToggle}
+            />
           </div>
         </div>
       </nav>
@@ -476,7 +463,7 @@ export default function App() {
         {/* ══════════════════════════════════════════════════
             1. Hero Section (Effect 3 — All Layers)
             ══════════════════════════════════════════════════ */}
-        <section id="hero" className="hero-section" aria-label="Introduction" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <section id="hero" aria-label="Introduction" style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
 
           {/* Interactive Background — Glass Reveal (Pristine color inside circle, Blurry B&W Sketch & Glitch outside) */}
           <GlassReveal
@@ -519,11 +506,10 @@ export default function App() {
             }}
           >
             {/* ── Text column ── */}
-            <div className="hero-text-col" style={{ flex: 1, minWidth: 0, maxWidth: 780 }}>
+            <div style={{ flex: 1, minWidth: 0, maxWidth: 780 }}>
 
               {/* Brand Pill */}
               <motion.div
-                className="hero-brand-pill"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.6 }}
                 style={{
@@ -548,7 +534,6 @@ export default function App() {
 
               {/* Layer 5 — TechText interactive name display */}
               <motion.div
-                className="hero-name-wrapper"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 60 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
                 style={{
@@ -583,7 +568,6 @@ export default function App() {
               </motion.div>
 
               <motion.h2
-                className="hero-subheading"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                 style={{ fontFamily: "'Sora', sans-serif", fontSize: 'clamp(1.25rem, 3vw, 2rem)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem', lineHeight: 1.2 }}
@@ -592,7 +576,6 @@ export default function App() {
               </motion.h2>
 
               <motion.p
-                className="hero-description"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
                 style={{ fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)', color: 'var(--text-secondary)', maxWidth: 500, marginBottom: '2rem', lineHeight: 1.65 }}
@@ -613,7 +596,6 @@ export default function App() {
 
               {/* Layer 5.5 — Credibility stat strip near Hero with SplitFlap departure-board ticker */}
               <motion.div
-                className="hero-credibility-card"
                 {...(reduced ? {} : { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 } })}
                 transition={{ duration: 0.8, delay: 0.35 }}
                 style={{
@@ -633,8 +615,8 @@ export default function App() {
                 }}
               >
                 {/* Departure Board Flip Ticker */}
-                <div className="hero-ticker-row" style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', paddingBottom: 2 }}>
-                  <span className="hero-ticker-label" style={{
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflowX: 'auto', paddingBottom: 2 }}>
+                  <span style={{
                     fontSize: '0.68rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
@@ -649,7 +631,6 @@ export default function App() {
                     Live Terminal:
                   </span>
                   <SplitFlapText
-                    className="hero-split-flap"
                     words={['17 REPOSITORIES', '20+ GITHUB STARS', '4 CLIENT BUILDS', 'PROD VERIFIED']}
                     fontSize={14}
                     tileRadius={4}
@@ -664,34 +645,34 @@ export default function App() {
 
                 <div style={{ width: '100%', height: 1, background: 'rgba(234, 88, 12, 0.14)' }} />
 
-                <div className="hero-stats-row" style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0.75rem, 2vw, 1.6rem)', flexWrap: 'wrap' }}>
-                  <div className="hero-stat-item" style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span className="stat-number" style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0.75rem, 2vw, 1.6rem)', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
                       <StatCounter target={17} />
                     </span>
-                    <span className="stat-label" style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Repositories
                     </span>
                   </div>
 
-                  <div className="hero-stat-divider" style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
+                  <div style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
 
-                  <div className="hero-stat-item" style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span className="stat-number" style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
                       <StatCounter target={20} suffix="+" />
                     </span>
-                    <span className="stat-label" style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Stars
                     </span>
                   </div>
 
-                  <div className="hero-stat-divider" style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
+                  <div style={{ width: 1, height: 28, background: 'rgba(234, 88, 12, 0.2)' }} />
 
-                  <div className="hero-stat-item" style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span className="stat-number" style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent-primary)', lineHeight: 1.1 }}>
                       <StatCounter target={4} />
                     </span>
-                    <span className="stat-label" style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       Client Projects Shipped
                     </span>
                   </div>
@@ -721,7 +702,6 @@ export default function App() {
 
           {/* Layer 7 — Bouncing scroll indicator */}
           <motion.div
-            className="hero-scroll-indicator"
             {...(reduced ? {} : { animate: { y: [0, 10, 0] } })}
             transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
             style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', zIndex: 3 }}
@@ -744,7 +724,7 @@ export default function App() {
             ══════════════════════════════════════════════════ */}
         <div
           id="non-hero-wrapper"
-          className={`non-hero-container theme-${themeMode.toLowerCase()}`}
+          className={`non-hero-container theme-${themeMode.toLowerCase()}${themeTransitioning ? ' theme-transitioning' : ''}`}
           style={{
             position: 'relative',
             isolation: 'isolate',
@@ -966,143 +946,187 @@ export default function App() {
                       };
 
                   return (
-                    <PixelCard
+                    <div
                       key={p.id}
-                      colors={pixelColors}
-                      gap={6}
-                      speed={30}
-                      style={pixelCardStyle}
+                      style={{ cursor: 'pointer', height: '100%' }}
+                      onClick={(e) => {
+                        if (e.target.closest('a') || e.target.closest('button')) return;
+                        setSelectedLanyardProject(p);
+                      }}
+                      title="Click to inspect 3D interactive physics pass"
                     >
-                      <div className="pixel-card-content">
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.75rem' }}>
-                          <div>
-                            <span style={{ display: 'inline-block', fontSize: '0.68rem', fontWeight: 600, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>
-                              {p.category}
+                      <PixelCard
+                        colors={pixelColors}
+                        gap={6}
+                        speed={30}
+                        style={pixelCardStyle}
+                      >
+                        <div className="pixel-card-content">
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.75rem' }}>
+                            <div>
+                              <span style={{ display: 'inline-block', fontSize: '0.68rem', fontWeight: 600, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>
+                                {p.category}
+                              </span>
+                              <h3 style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                                {p.name}
+                              </h3>
+                            </div>
+                            <span style={{
+                              fontSize: '0.68rem',
+                              fontWeight: 600,
+                              padding: '0.3rem 0.75rem',
+                              borderRadius: 100,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.06em',
+                              whiteSpace: 'nowrap',
+                              flexShrink: 0,
+                              background: p.liveUrl ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 107, 0, 0.12)',
+                              color: p.liveUrl ? '#22c55e' : 'var(--accent-secondary)',
+                              border: p.liveUrl ? '1px solid rgba(34, 197, 94, 0.35)' : '1px solid var(--border-subtle)',
+                            }}>
+                              {p.liveUrl ? 'Live' : 'GitHub'}
                             </span>
-                            <h3 style={{ fontFamily: "'Sora', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
-                              {p.name}
-                            </h3>
                           </div>
-                          <span style={{
-                            fontSize: '0.68rem',
-                            fontWeight: 600,
-                            padding: '0.3rem 0.75rem',
-                            borderRadius: 100,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.06em',
-                            whiteSpace: 'nowrap',
-                            flexShrink: 0,
-                            background: p.liveUrl ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 107, 0, 0.12)',
-                            color: p.liveUrl ? '#22c55e' : 'var(--accent-secondary)',
-                            border: p.liveUrl ? '1px solid rgba(34, 197, 94, 0.35)' : '1px solid var(--border-subtle)',
-                          }}>
-                            {p.liveUrl ? 'Live' : 'GitHub'}
-                          </span>
-                        </div>
 
-                        <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-secondary)', marginBottom: '0.65rem', lineHeight: 1.4 }}>
-                          {p.tagline}
-                        </p>
+                          <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-secondary)', marginBottom: '0.65rem', lineHeight: 1.4 }}>
+                            {p.tagline}
+                          </p>
 
-                        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: '1.25rem', flex: 1 }}>
-                          {p.desc}
-                        </p>
+                          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: '1.25rem', flex: 1 }}>
+                            {p.desc}
+                          </p>
 
-                        {/* Tech badges */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
-                          {p.tech.map((t) => (
-                            <span
-                              key={t}
-                              style={{
-                                fontSize: '0.72rem',
-                                padding: '3px 8px',
-                                borderRadius: 4,
-                                background: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-subtle)',
-                                color: 'var(--text-secondary)',
-                                fontFamily: 'monospace',
-                              }}
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* Card Buttons */}
-                        <div style={{ display: 'flex', gap: '0.8rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', flexWrap: 'wrap' }}>
-                          {p.liveUrl ? (
-                            <>
-                              <a
-                                href={p.liveUrl}
-                                target="_blank"
-                                rel="noopener"
-                                aria-label={`Live demo of ${p.name}`}
+                          {/* Tech badges */}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1.25rem' }}>
+                            {p.tech.map((t) => (
+                              <span
+                                key={t}
                                 style={{
-                                  fontSize: '0.82rem',
-                                  fontWeight: 600,
-                                  color: '#ffffff',
-                                  background: 'var(--accent-primary)',
-                                  border: '1px solid var(--accent-primary)',
-                                  padding: '0.45rem 1rem',
-                                  borderRadius: 6,
-                                  transition: 'all 0.25s ease',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: 4,
-                                  boxShadow: '0 2px 10px var(--accent-glow)',
-                                }}
-                              >
-                                Live Demo ↗
-                              </a>
-                              <a
-                                href={p.repoUrl}
-                                target="_blank"
-                                rel="noopener"
-                                aria-label={`View code for ${p.name} on GitHub`}
-                                style={{
-                                  fontSize: '0.82rem',
-                                  fontWeight: 500,
-                                  color: 'var(--text-primary)',
-                                  background: 'var(--bg-card)',
+                                  fontSize: '0.72rem',
+                                  padding: '3px 8px',
+                                  borderRadius: 4,
+                                  background: 'var(--bg-secondary)',
                                   border: '1px solid var(--border-subtle)',
-                                  padding: '0.45rem 1rem',
-                                  borderRadius: 6,
-                                  transition: 'all 0.25s ease',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: 4,
+                                  color: 'var(--text-secondary)',
+                                  fontFamily: 'monospace',
                                 }}
                               >
-                                View Code ↗
-                              </a>
-                            </>
-                          ) : (
-                            <a
-                              href={p.repoUrl}
-                              target="_blank"
-                              rel="noopener"
-                              aria-label={`View code for ${p.name} on GitHub`}
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* Card Buttons + 3D Pass Trigger */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.6rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                              {p.liveUrl ? (
+                                <>
+                                  <a
+                                    href={p.liveUrl}
+                                    target="_blank"
+                                    rel="noopener"
+                                    className="action-link"
+                                    aria-label={`Live demo of ${p.name}`}
+                                    style={{
+                                      fontSize: '0.82rem',
+                                      fontWeight: 600,
+                                      color: '#ffffff',
+                                      background: 'var(--accent-primary)',
+                                      border: '1px solid var(--accent-primary)',
+                                      padding: '0.45rem 0.9rem',
+                                      borderRadius: 6,
+                                      transition: 'all 0.25s ease',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 4,
+                                      boxShadow: '0 2px 10px var(--accent-glow)',
+                                    }}
+                                  >
+                                    Live ↗
+                                  </a>
+                                  <a
+                                    href={p.repoUrl}
+                                    target="_blank"
+                                    rel="noopener"
+                                    className="action-link"
+                                    aria-label={`View code for ${p.name} on GitHub`}
+                                    style={{
+                                      fontSize: '0.82rem',
+                                      fontWeight: 500,
+                                      color: 'var(--text-primary)',
+                                      background: 'var(--bg-card)',
+                                      border: '1px solid var(--border-subtle)',
+                                      padding: '0.45rem 0.9rem',
+                                      borderRadius: 6,
+                                      transition: 'all 0.25s ease',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 4,
+                                    }}
+                                  >
+                                    Code ↗
+                                  </a>
+                                </>
+                              ) : (
+                                <a
+                                  href={p.repoUrl}
+                                  target="_blank"
+                                  rel="noopener"
+                                  className="action-link"
+                                  aria-label={`View code for ${p.name} on GitHub`}
+                                  style={{
+                                    fontSize: '0.82rem',
+                                    fontWeight: 600,
+                                    color: '#ffffff',
+                                    background: 'var(--accent-primary)',
+                                    border: '1px solid var(--accent-primary)',
+                                    padding: '0.45rem 0.9rem',
+                                    borderRadius: 6,
+                                    transition: 'all 0.25s ease',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                    boxShadow: '0 2px 10px var(--accent-glow)',
+                                  }}
+                                >
+                                  Code ↗
+                                </a>
+                              )}
+                            </div>
+
+                            {/* 3D Lanyard Preview Trigger Button */}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedLanyardProject(p)}
                               style={{
-                                fontSize: '0.82rem',
+                                fontSize: '0.78rem',
                                 fontWeight: 600,
-                                color: '#ffffff',
-                                background: 'var(--accent-primary)',
-                                border: '1px solid var(--accent-primary)',
-                                padding: '0.45rem 1rem',
+                                color: 'var(--accent-primary)',
+                                background: 'rgba(234, 88, 12, 0.08)',
+                                border: '1px solid rgba(234, 88, 12, 0.28)',
+                                padding: '0.42rem 0.85rem',
                                 borderRadius: 6,
-                                transition: 'all 0.25s ease',
+                                cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: 4,
-                                boxShadow: '0 2px 10px var(--accent-glow)',
+                                gap: 5,
+                                transition: 'all 0.2s ease',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'var(--accent-primary)';
+                                e.currentTarget.style.color = '#ffffff';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(234, 88, 12, 0.08)';
+                                e.currentTarget.style.color = 'var(--accent-primary)';
                               }}
                             >
-                              View Code ↗
-                            </a>
-                          )}
+                              <span>🪪 3D Card</span>
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </PixelCard>
+                      </PixelCard>
+                    </div>
                   );
                 }
 
@@ -1289,18 +1313,7 @@ export default function App() {
               })}
             </div>
 
-            {/* ── Part B: Lazy-Mounted 3D Physics Lanyard Modal ── */}
-            <AnimatePresence>
-              {selectedLanyardProject && (
-                <Suspense fallback={null}>
-                  <ProjectLanyardModal
-                    project={selectedLanyardProject}
-                    onClose={() => setSelectedLanyardProject(null)}
-                    themeMode={themeMode}
-                  />
-                </Suspense>
-              )}
-            </AnimatePresence>
+
           </div>
         </section>
 
@@ -1381,7 +1394,7 @@ export default function App() {
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.1}>
-              <AgentChat />
+              <AgentChat themeMode={themeMode} />
             </ScrollReveal>
           </div>
         </section>
@@ -1443,6 +1456,58 @@ export default function App() {
           </div>
         </div>
       </main>
-    </>
+
+      {/* ── Floating AI Mascot Widget (Idroid) ── */}
+      <AgentWidget themeMode={themeMode} />
+
+      {/* ── Floating AI Chat Modal ── */}
+      <AgentChatModal themeMode={themeMode} />
+
+      {/* ── 3D Physics Lanyard Modal (Root Level) ── */}
+      <AnimatePresence>
+        {selectedLanyardProject && (
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  zIndex: 999999,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 16,
+                  background: themeMode === 'Dim' ? 'rgba(0, 0, 0, 0.78)' : 'rgba(15, 23, 42, 0.6)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  color: themeMode === 'Dim' ? '#ffffff' : '#0f172a',
+                }}
+              >
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    border: '3px solid rgba(234, 88, 12, 0.25)',
+                    borderTop: '3px solid var(--accent-primary)',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite',
+                  }}
+                />
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.04em' }}>
+                  Loading 3D Physics Card...
+                </span>
+              </div>
+            }
+          >
+            <ProjectLanyardModal
+              project={selectedLanyardProject}
+              onClose={() => setSelectedLanyardProject(null)}
+              themeMode={themeMode}
+            />
+          </Suspense>
+        )}
+      </AnimatePresence>
+    </AgentProvider>
   );
 }

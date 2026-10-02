@@ -455,9 +455,8 @@ export default function GlassReveal({
       gl.uniform2f(uResolution, width, height);
       gl.uniform2f(uImageRes, naturalImageRes.w, naturalImageRes.h);
       gl.uniform2f(uMouse, mouseRef.current.x, mouseRef.current.y);
-      const isMobileView = width > 0 && (width / dpr) < 768;
-      const effectiveSize = isMobileView ? Math.max(size, 0.52) : size;
-      gl.uniform1f(uSize, effectiveSize);
+      gl.uniform1f(uTime, elapsed);
+      gl.uniform1f(uSize, size);
       gl.uniform1f(uDistortion, distortion);
       gl.uniform1f(uSoftness, softness);
       gl.uniform1i(uShape, shapeCode);

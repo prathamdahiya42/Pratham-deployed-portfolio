@@ -61,11 +61,11 @@ export async function handleAgentRequest(req) {
   }
 
   // 1. Rate Limiting Check (8 requests / min / IP)
-  if (ratelimit) {
-    const forwarded = req.headers.get ? req.headers.get('x-forwarded-for') : req.headers['x-forwarded-for'];
-    const realIp = req.headers.get ? req.headers.get('x-real-ip') : req.headers['x-real-ip'];
-    const ip = (forwarded ? forwarded.split(',')[0].trim() : realIp) || '127.0.0.1';
+  const forwarded = req.headers.get ? req.headers.get('x-forwarded-for') : req.headers?.['x-forwarded-for'];
+  const realIp = req.headers.get ? req.headers.get('x-real-ip') : req.headers?.['x-real-ip'];
+  const ip = (forwarded ? forwarded.split(',')[0].trim() : realIp) || '127.0.0.1';
 
+  if (ratelimit) {
     try {
       const { success, limit, remaining, reset } = await ratelimit.limit(ip);
       if (!success) {
@@ -91,6 +91,29 @@ export async function handleAgentRequest(req) {
     } catch (rlError) {
       console.warn('Ratelimit check skipped due to error:', rlError.message);
     }
+  } else {
+    // In-memory fallback rate limiter
+    if (!globalThis.__agentRateLimitStore) {
+      globalThis.__agentRateLimitStore = new Map();
+    }
+    const now = Date.now();
+    const windowMs = 60 * 1000;
+    const records = globalThis.__agentRateLimitStore.get(ip) || [];
+    const validRecords = records.filter(t => now - t < windowMs);
+    if (validRecords.length >= 8) {
+      return new Response(
+        JSON.stringify({
+          error: "You've reached the question limit (8 per minute). Please wait a moment or reach out directly to Pratham via the contact section below.",
+          rateLimited: true,
+        }),
+        {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    validRecords.push(now);
+    globalThis.__agentRateLimitStore.set(ip, validRecords);
   }
 
   // 2. Parse & Validate Body

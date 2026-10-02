@@ -1,5 +1,4 @@
-/* eslint-disable react/no-unknown-property */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, useTexture, Environment, Lightformer, Float, PresentationControls, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
@@ -61,12 +60,14 @@ export default function Lanyard({
             floatIntensity={0.5}
             floatingRange={[-0.12, 0.12]}
           >
-            <CardBadge
-              isMobile={isMobile}
-              frontImage={frontImage}
-              backImage={backImage}
-              imageFit={imageFit}
-            />
+            <Suspense fallback={null}>
+              <CardBadge
+                isMobile={isMobile}
+                frontImage={frontImage}
+                backImage={backImage}
+                imageFit={imageFit}
+              />
+            </Suspense>
           </Float>
         </PresentationControls>
 
